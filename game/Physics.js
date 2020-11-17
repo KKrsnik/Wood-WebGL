@@ -9,8 +9,8 @@ export default class Physics {
 
     update(dt) {
         this.scene.traverse(node => {
-            if (node.velocity) {
-                vec3.scaleAndAdd(node.translation, node.translation, node.velocity, dt);
+            if (node.camera) {
+                vec3.scaleAndAdd(node.translation, node.translation, node.camera.velocity, dt);
                 node.updateTransform();
                 this.scene.traverse(other => {
                     if (node !== other) {
