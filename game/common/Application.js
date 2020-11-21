@@ -36,8 +36,7 @@ export default class Application {
         const gl = this.gl;
 
         if (canvas.width !== canvas.clientWidth ||
-            canvas.height !== canvas.clientHeight)
-        {
+            canvas.height !== canvas.clientHeight) {
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
 

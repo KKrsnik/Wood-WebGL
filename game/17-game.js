@@ -10,9 +10,6 @@ import GLTFLoader from './GLTFLoader.js';
 class App extends Application {
 
     async start() {
-        //const gl = this.gl;
-
-        //this.renderer = new Renderer(gl);
         this.time = Date.now();
         this.startTime = this.time;
         this.aspect = 1;
@@ -21,8 +18,9 @@ class App extends Application {
         document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
 
         this.loader = new GLTFLoader();
-        await this.loader.load('./common/models/scena/scena.gltf');
+        await this.loader.load('./common/models/scena/Test1.gltf');
 
+        // this.initOimoPhysics();
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
         this.camera = await this.loader.loadNode('Camera');
 
@@ -40,6 +38,7 @@ class App extends Application {
         this.renderer.prepareScene(this.scene);
         this.resize();
     }
+
     /*
     async load(uri) {
         const scene = await new SceneLoader().loadScene('scene.json');

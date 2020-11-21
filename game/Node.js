@@ -18,17 +18,29 @@ export default class Node {
             ? mat4.clone(options.matrix)
             : mat4.create();
 
+        this.negScale = new Float32Array(3)
+        for (let i = 0; i < 3; i++) {
+            if (options.name === "Plane" && i === 1) {
+                this.scale[i] = 0.1
+            }
+            this.negScale[i] = -this.scale[i]
+        }
         this.aabb = {
-          min: [0, 0, 0],
-          max: [0, 0, 0],
+            min: this.negScale,
+            max: this.scale,
         };
 
         this.rotationDeg = [0, 0, 0];
 
         if (options.matrix) {
-            this.updateTransform();
+            this.updateMatrix();
         } else if (options.translation || options.rotation || options.scale) {
-            this.updateTransform();
+            if (options.name === "Camera") {
+                this.updateTransform();
+            } else {
+                this.updateMatrix();
+            }
+
         }
 
         this.camera = options.camera || null;

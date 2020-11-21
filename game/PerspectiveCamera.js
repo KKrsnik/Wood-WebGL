@@ -29,7 +29,7 @@ export default class PerspectiveCamera extends Camera {
         this.keys = {};
     }
 
-    setTransformation(tranformacija){
+    setTransformation(tranformacija) {
         this.transformacija = tranformacija;
     }
 
@@ -67,7 +67,8 @@ export default class PerspectiveCamera extends Camera {
         if (this.keys['Space']) {
             vec3.add(acc, acc, up);
         }
-        if (this.keys['ControlLeft']) {
+        if (!this.keys['Space']) {
+            // if (this.keys['KeyC']) {
             vec3.sub(acc, acc, up);
         }
 
@@ -78,8 +79,7 @@ export default class PerspectiveCamera extends Camera {
         if (!this.keys['KeyW'] &&
             !this.keys['KeyS'] &&
             !this.keys['KeyD'] &&
-            !this.keys['KeyA'])
-        {
+            !this.keys['KeyA']) {
             vec3.scale(this.velocity, this.velocity, 1 - this.friction);
         }
 
