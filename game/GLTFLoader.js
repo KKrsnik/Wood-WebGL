@@ -25,7 +25,14 @@ export default class GLTFLoader {
         this.gltfUrl = null;
         this.dirname = null;
 
+        this.world = null;
+        this.bodys = [];
+        this.type = 1;
+
+
         this.cache = new Map();
+
+        this.initOimoPhysics();
     }
 
     fetchJson(url) {
@@ -72,7 +79,7 @@ export default class GLTFLoader {
             return image;
         } else {
             const bufferView = await this.loadBufferView(gltfSpec.bufferView);
-            const blob = new Blob([bufferView], { type: gltfSpec.mimeType });
+            const blob = new Blob([bufferView], {type: gltfSpec.mimeType});
             const url = URL.createObjectURL(blob);
             const image = await this.fetchImage(url);
             URL.revokeObjectURL(url);
@@ -114,19 +121,19 @@ export default class GLTFLoader {
         }
 
         const accessorTypeToNumComponentsMap = {
-            SCALAR : 1,
-            VEC2   : 2,
-            VEC3   : 3,
-            VEC4   : 4,
-            MAT2   : 4,
-            MAT3   : 9,
-            MAT4   : 16,
+            SCALAR: 1,
+            VEC2: 2,
+            VEC3: 3,
+            VEC4: 4,
+            MAT2: 4,
+            MAT3: 9,
+            MAT4: 16,
         };
 
         const accessor = new Accessor({
             ...gltfSpec,
-            bufferView    : await this.loadBufferView(gltfSpec.bufferView),
-            numComponents : accessorTypeToNumComponentsMap[gltfSpec.type],
+            bufferView: await this.loadBufferView(gltfSpec.bufferView),
+            numComponents: accessorTypeToNumComponentsMap[gltfSpec.type],
         });
         this.cache.set(gltfSpec, accessor);
         return accessor;
@@ -139,10 +146,10 @@ export default class GLTFLoader {
         }
 
         const sampler = new Sampler({
-            min   : gltfSpec.minFilter,
-            mag   : gltfSpec.magFilter,
-            wrapS : gltfSpec.wrapS,
-            wrapT : gltfSpec.wrapT,
+            min: gltfSpec.minFilter,
+            mag: gltfSpec.magFilter,
+            wrapS: gltfSpec.wrapS,
+            wrapT: gltfSpec.wrapT,
         });
         this.cache.set(gltfSpec, sampler);
         return sampler;
@@ -222,7 +229,7 @@ export default class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
 
-        let options = { primitives: [] };
+        let options = {primitives: []};
         for (const primitiveSpec of gltfSpec.primitives) {
             let primitiveOptions = {};
             primitiveOptions.attributes = {};
@@ -254,22 +261,22 @@ export default class GLTFLoader {
         if (gltfSpec.type === 'perspective') {
             const persp = gltfSpec.perspective;
             const camera = new PerspectiveCamera({
-                aspect : persp.aspectRatio,
-                fov    : persp.yfov,
-                near   : persp.znear,
-                far    : persp.zfar,
+                aspect: persp.aspectRatio,
+                fov: persp.yfov,
+                near: persp.znear,
+                far: persp.zfar,
             });
             this.cache.set(gltfSpec, camera);
             return camera;
         } else if (gltfSpec.type === 'orthographic') {
             const ortho = gltfSpec.orthographic;
             const camera = new OrthographicCamera({
-                left   : -ortho.xmag,
-                right  : ortho.xmag,
-                bottom : -ortho.ymag,
-                top    : ortho.ymag,
-                near   : ortho.znear,
-                far    : ortho.zfar,
+                left: -ortho.xmag,
+                right: ortho.xmag,
+                bottom: -ortho.ymag,
+                top: ortho.ymag,
+                near: ortho.znear,
+                far: ortho.zfar,
             });
             this.cache.set(gltfSpec, camera);
             return camera;
@@ -282,7 +289,7 @@ export default class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
 
-        let options = { ...gltfSpec, children: [] };
+        let options = {...gltfSpec, children: []};
         if (gltfSpec.children) {
             for (const nodeIndex of gltfSpec.children) {
                 const node = await this.loadNode(nodeIndex);
@@ -307,7 +314,7 @@ export default class GLTFLoader {
             return this.cache.get(gltfSpec);
         }
 
-        let options = { nodes: [] };
+        let options = {nodes: []};
         if (gltfSpec.nodes) {
             for (const nodeIndex of gltfSpec.nodes) {
                 const node = await this.loadNode(nodeIndex);
@@ -319,5 +326,141 @@ export default class GLTFLoader {
         this.cache.set(gltfSpec, scene);
         return scene;
     }
+
+
+    initOimoPhysics() {
+
+        // world setting:( TimeStep, BroadPhaseType, Iterations )
+        // BroadPhaseType can be
+        // 1 : BruteForce
+        // 2 : Sweep and prune , the default
+        // 3 : dynamic bounding volume tree
+
+        this.world = new OIMO.World({info: true, worldscale: 100});
+        this.populate(1);
+        //setInterval(updateOimoPhysics, 1000/60);
+
+    }
+
+    populate(n) {
+
+        var max = 10;
+
+        if (n === 1) this.type = 1
+        else if (n === 2) this.type = 2;
+        else if (n === 3) this.type = 3;
+        else if (n === 4) this.type = 4;
+
+        // reset old
+        // clearMesh();
+        this.world.clear();
+        this.bodys = [];
+
+        //add ground
+        var ground0 = this.world.add({size: [40, 40, 390], pos: [-180, 20, 0], world: this.world});
+        var ground1 = this.world.add({size: [40, 40, 390], pos: [180, 20, 0], world: this.world});
+        var ground2 = this.world.add({size: [400, 80, 400], pos: [0, -40, 0], world: this.world});
+
+        // addStaticBox([40, 40, 390], [-180, 20, 0], [0, 0, 0]);
+        // addStaticBox([40, 40, 390], [180, 20, 0], [0, 0, 0]);
+        // addStaticBox([400, 80, 400], [0, -40, 0], [0, 0, 0]);
+
+        //add object
+        var x, y, z, w, h, d;
+        var i = max;
+
+        var t;
+        while (i--) {
+            if (this.type === 4) t = Math.floor(Math.random() * 3) + 1;
+            else t = this.type;
+            x = -100 + Math.random() * 200;
+            z = -100 + Math.random() * 200;
+            y = 100 + Math.random() * 1000;
+            w = 10 + Math.random() * 10;
+            h = 10 + Math.random() * 10;
+            d = 10 + Math.random() * 10;
+
+            if (t === 1) {
+                this.bodys[i] = this.world.add({
+                    type: 'sphere',
+                    size: [w * 0.5],
+                    pos: [x, y, z],
+                    move: true,
+                    world: this.world
+                });
+                // meshs[i] = new THREE.Mesh(geos.sphere, mats.sph);
+                // meshs[i].scale.set(w * 0.5, w * 0.5, w * 0.5);
+            } else if (t === 2) {
+                this.bodys[i] = this.world.add({
+                    type: 'box',
+                    size: [w, h, d],
+                    pos: [x, y, z],
+                    move: true,
+                    world: this.world
+                });
+                // meshs[i] = new THREE.Mesh(geos.box, mats.box);
+                // meshs[i].scale.set(w, h, d);
+            } else if (t === 3) {
+                this.bodys[i] = this.world.add({
+                    type: 'cylinder',
+                    size: [w * 0.5, h],
+                    pos: [x, y, z],
+                    move: true,
+                    world: this.world
+                });
+                // meshs[i] = new THREE.Mesh(geos.cylinder, mats.cyl);
+                // meshs[i].scale.set(w * 0.5, h, w * 0.5);
+            }
+
+            // meshs[i].castShadow = true;
+            // meshs[i].receiveShadow = true;
+
+            // scene.add(meshs[i]);
+        }
+    }
+
+    updateOimoPhysics() {
+        if (this.world == null) return;
+
+        this.world.step();
+
+        var x, y, z, mesh, body, i = this.bodys.length;
+
+        while (i--) {
+            body = this.bodys[i];
+            // mesh = meshs[i];
+
+            if (!body.sleeping) {
+
+                // mesh.position.copy(body.getPosition());
+                // mesh.quaternion.copy(body.getQuaternion());
+
+                // change material
+                // if (mesh.material.name === 'sbox') mesh.material = mats.box;
+                // if (mesh.material.name === 'ssph') mesh.material = mats.sph;
+                // if (mesh.material.name === 'scyl') mesh.material = mats.cyl;
+
+                // reset position
+                // if (mesh.position.y < -100) {
+                //     x = -100 + Math.random() * 200;
+                //     z = -100 + Math.random() * 200;
+                //     y = 100 + Math.random() * 1000;
+                //     body.resetPosition(x, y, z);
+                // }
+            } else {
+                // if (mesh.material.name === 'box') mesh.material = mats.sbox;
+                // if (mesh.material.name === 'sph') mesh.material = mats.ssph;
+                // if (mesh.material.name === 'cyl') mesh.material = mats.scyl;
+            }
+        }
+
+        // infos.innerHTML = this.world.getInfo();
+    }
+
+    gravity(g) {
+        let nG = document.getElementById("gravity").value;
+        this.world.gravity = new OIMO.Vec3(0, nG, 0);
+    }
+
 
 }

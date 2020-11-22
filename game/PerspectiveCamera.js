@@ -67,8 +67,8 @@ export default class PerspectiveCamera extends Camera {
         if (this.keys['Space']) {
             vec3.add(acc, acc, up);
         }
-        if (!this.keys['Space']) {
-            // if (this.keys['KeyC']) {
+        // if (!this.keys['Space']) {
+        if (this.keys['KeyC']) {
             vec3.sub(acc, acc, up);
         }
 

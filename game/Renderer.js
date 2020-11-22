@@ -28,8 +28,8 @@ export default class Renderer {
             bufferView.byteOffset,
             bufferView.byteLength);
         const glBuffer = WebGL.createBuffer(this.gl, {
-            target : bufferView.target,
-            data   : buffer
+            target: bufferView.target,
+            data: buffer
         });
         this.glObjects.set(bufferView, glBuffer);
         return glBuffer;
@@ -49,8 +49,8 @@ export default class Renderer {
         if (this.glObjects.has(image)) {
             return this.glObjects.get(image);
         }
-        console.log({ image });
-        const glTexture = WebGL.createTexture(this.gl, { image });
+        console.log({image});
+        const glTexture = WebGL.createTexture(this.gl, {image});
         this.glObjects.set(image, glTexture);
         return glTexture;
     }
@@ -112,9 +112,9 @@ export default class Renderer {
 
         // this is an application-scoped convention, matching the shader
         const attributeNameToIndexMap = {
-            POSITION   : 0,
-            TEXCOORD_0 : 1,
-            NORMAL     : 2,
+            POSITION: 0,
+            TEXCOORD_0: 1,
+            NORMAL: 2,
         };
 
         console.log(primitive.attributes);

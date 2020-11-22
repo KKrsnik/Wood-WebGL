@@ -5,6 +5,7 @@ const quat = glMatrix.quat;
 export default class Node {
 
     constructor(options = {}) {
+        this.options = options
         this.translation = options.translation
             ? vec3.clone(options.translation)
             : vec3.fromValues(0, 0, 0);
@@ -17,18 +18,33 @@ export default class Node {
         this.matrix = options.matrix
             ? mat4.clone(options.matrix)
             : mat4.create();
-
-        this.negScale = new Float32Array(3)
-        for (let i = 0; i < 3; i++) {
-            if (options.name === "Plane" && i === 1) {
-                this.scale[i] = 0.1
-            }
-            this.negScale[i] = -this.scale[i]
+        this.body = {
+            type: 'box',
+            pos: options.translation
+                ? vec3.clone(options.translation)
+                : vec3.fromValues(0, 0, 0),
+            size: options.scale
+                ? vec3.clone(options.scale)
+                : vec3.fromValues(1, 1, 1),
+            rot: [0, 0, 0],
+            move: false,
+            density: 1,
+            friction: 0.2,
+            restitution: 0.2,
+            belongsTo: 1,
+            collidesWith: 0xffffffff,
         }
-        this.aabb = {
-            min: this.negScale,
-            max: this.scale,
-        };
+        // this.negScale = new Float32Array(3)
+        // for (let i = 0; i < 3; i++) {
+        //     if (options.name === "Plane" && i === 1) {
+        //         this.scale[i] = 0.1
+        //     }
+        //     this.negScale[i] = -this.scale[i]
+        // }
+        // this.aabb = {
+        //     min: this.negScale,
+        //     max: this.scale,
+        // };
 
         this.rotationDeg = [0, 0, 0];
 
@@ -36,6 +52,8 @@ export default class Node {
             this.updateMatrix();
         } else if (options.translation || options.rotation || options.scale) {
             if (options.name === "Camera") {
+                this.body.move = true;
+                // this.body.move = true;
                 this.updateTransform();
             } else {
                 this.updateMatrix();
@@ -52,6 +70,7 @@ export default class Node {
             child.parent = this;
         }
         this.parent = null;
+
     }
 
     updateTransform() {
@@ -92,6 +111,8 @@ export default class Node {
     }
 
     getGlobalTransform() {
+        console.log(this.options)
+        console.log(this)
         if (!this.parent) {
             return mat4.clone(this.matrix);
         } else {
