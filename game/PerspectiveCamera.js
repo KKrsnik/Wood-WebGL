@@ -20,6 +20,8 @@ export default class PerspectiveCamera extends Camera {
         this.maxSpeed = 3;
         this.friction = 0.2;
         this.acceleration = 20;
+        
+        this.jump = false;
 
         this.updateMatrix();
 
@@ -47,8 +49,10 @@ export default class PerspectiveCamera extends Camera {
             -Math.sin(c.rotationDeg[1]), 0, -Math.cos(c.rotationDeg[1]));
         const right = vec3.set(vec3.create(),
             Math.cos(c.rotationDeg[1]), 0, -Math.sin(c.rotationDeg[1]));
-
-        const up = vec3.set(vec3.create(), 0, 1, 0);
+        
+        const gravity = vec3.set(vec3.create(), 0, 1, 0);
+        
+        
 
         // 1: add movement acceleration
         let acc = vec3.create();
@@ -65,11 +69,12 @@ export default class PerspectiveCamera extends Camera {
             vec3.sub(acc, acc, right);
         }
         if (this.keys['Space']) {
-            vec3.add(acc, acc, up);
+            vec3.add(acc, acc, gravity);
         }
-        if (this.keys['ControlLeft']) {
-            vec3.sub(acc, acc, up);
+        if (!this.keys['Space']) {
+            vec3.sub(acc, acc, gravity);
         }
+
 
         // 2: update velocity
         vec3.scaleAndAdd(this.velocity, this.velocity, acc, dt * this.acceleration);

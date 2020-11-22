@@ -283,6 +283,9 @@ export default class GLTFLoader {
         }
 
         let options = { ...gltfSpec, children: [] };
+        
+        console.log(options);
+        
         if (gltfSpec.children) {
             for (const nodeIndex of gltfSpec.children) {
                 const node = await this.loadNode(nodeIndex);
@@ -295,6 +298,7 @@ export default class GLTFLoader {
         if (gltfSpec.mesh !== undefined) {
             options.mesh = await this.loadMesh(gltfSpec.mesh);
         }
+        
 
         const node = new Node(options);
         this.cache.set(gltfSpec, node);

@@ -39,7 +39,7 @@ export default class Renderer {
         if (this.glObjects.has(sampler)) {
             return this.glObjects.get(sampler);
         }
-        console.log(sampler);
+
         const glSampler = WebGL.createSampler(this.gl, sampler);
         this.glObjects.set(sampler, glSampler);
         return glSampler;
@@ -49,7 +49,7 @@ export default class Renderer {
         if (this.glObjects.has(image)) {
             return this.glObjects.get(image);
         }
-        console.log({ image });
+
         const glTexture = WebGL.createTexture(this.gl, { image });
         this.glObjects.set(image, glTexture);
         return glTexture;

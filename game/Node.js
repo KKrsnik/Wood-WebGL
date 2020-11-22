@@ -18,10 +18,18 @@ export default class Node {
             ? mat4.clone(options.matrix)
             : mat4.create();
 
-        this.aabb = {
-          min: [0, 0, 0],
-          max: [0, 0, 0],
-        };
+        if(options.aabb){
+            let col = options.aabb;
+            this.aabb = {
+                min: [col[0], col[1], col[2]],
+                max: [col[3], col[4], col[5]],
+            };
+        }else{
+            this.aabb = {
+                min: [-1, -1, -1],
+                max: [1, 1, 1],
+            };
+        }
 
         this.rotationDeg = [0, 0, 0];
 
@@ -40,6 +48,8 @@ export default class Node {
             child.parent = this;
         }
         this.parent = null;
+        
+        console.log(this);
     }
 
     updateTransform() {
