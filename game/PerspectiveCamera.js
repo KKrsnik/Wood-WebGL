@@ -20,7 +20,7 @@ export default class PerspectiveCamera extends Camera {
         this.maxSpeed = 3;
         this.friction = 0.2;
         this.acceleration = 20;
-        
+
         this.jump = false;
 
         this.updateMatrix();
@@ -31,7 +31,7 @@ export default class PerspectiveCamera extends Camera {
         this.keys = {};
     }
 
-    setTransformation(tranformacija){
+    setTransformation(tranformacija) {
         this.transformacija = tranformacija;
     }
 
@@ -49,10 +49,10 @@ export default class PerspectiveCamera extends Camera {
             -Math.sin(c.rotationDeg[1]), 0, -Math.cos(c.rotationDeg[1]));
         const right = vec3.set(vec3.create(),
             Math.cos(c.rotationDeg[1]), 0, -Math.sin(c.rotationDeg[1]));
-        
+
         const gravity = vec3.set(vec3.create(), 0, 1, 0);
-        
-        
+
+
 
         // 1: add movement acceleration
         let acc = vec3.create();
@@ -83,8 +83,7 @@ export default class PerspectiveCamera extends Camera {
         if (!this.keys['KeyW'] &&
             !this.keys['KeyS'] &&
             !this.keys['KeyD'] &&
-            !this.keys['KeyA'])
-        {
+            !this.keys['KeyA']) {
             vec3.scale(this.velocity, this.velocity, 1 - this.friction);
         }
 
