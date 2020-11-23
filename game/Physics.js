@@ -5,14 +5,34 @@ export default class Physics {
 
     constructor(scene) {
         this.scene = scene;
-        this.world = new OIMO.World({info: true, worldscale: 100, gravity: [0, 0, 0]});
+        this.world = new OIMO.World({
+            timestep: 1/60,
+            iterations: 8,
+            broadphase: 2, // 1 brute force, 2 sweep and prune, 3 volume tree
+            worldscale: 1, // scale full world
+            random: true,  // randomize sample
+            info: false,   // calculate statistic or not
+            gravity: [0, -9.8, 0]
+        });
 
         this.scene.traverse(node => {
-            console.log(node);
-            console.log(this.world);
-            node.fizik = this.world.add(node.body);
-            console.log(this.world);
-
+            //console.log(node);
+            if(node.camera){
+              node.fizik = this.world.add(node.body);
+              console.log(node);
+            }
+            if(node.options.name === "Cube"){
+              node.fizik = this.world.add(node.body);
+              console.log(node);
+            }
+            if(node.options.name === "Cube.001"){
+              node.fizik = this.world.add(node.body);
+              console.log(node);
+            }
+            if(node.options.name === "Plane"){
+              node.fizik = this.world.add(node.body);
+              console.log(node);
+            }
         });
     }
 
@@ -20,27 +40,18 @@ export default class Physics {
         this.world.step();
         this.scene.traverse(node => {
             if (node.camera) {
-                vec3.scaleAndAdd(node.translation, node.translation, node.camera.velocity, dt);
+                node.fizik.applyImpulse({x: 0, y: 0, z: 0}, node.camera.getVelocity());
+                //node.fizik.linearVelocity = node.camera.getVelocity();
+
+                //console.log(node.translation, node.fizik.pos);
+
+                let pos = node.fizik.getPosition();
+                node.translation[0] = pos.x;
+                node.translation[1] = pos.y;
+                node.translation[2] = pos.z;
                 node.updateTransform();
+                //console.log(node.fizik);
             }
-
-            //node.rotation = mat4.clone(node.fizik.getQuaternion());
-            /*
-            let rot = node.fizik.getQuaternion();
-            node.rotation[0] = rot.x;
-            node.rotation[1] = rot.y;
-            node.rotation[2] = rot.z;
-            node.rotation[3] = rot.w;
-            */
-            //node.translation = mat4.clone(node.fizik.getPosition());
-
-            let pos = node.fizik.getPosition();
-            node.translation[0] = pos.x;
-            node.translation[1] = pos.y;
-            node.translation[2] = pos.z;
-            node.translation[3] = pos.w;
-
-            node.updateMatrix();
         });
     }
 

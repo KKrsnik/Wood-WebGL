@@ -50,7 +50,6 @@ export default class Renderer {
             return this.glObjects.get(image);
         }
 
-        console.log({image});
         const glTexture = WebGL.createTexture(this.gl, {image});
         this.glObjects.set(image, glTexture);
         return glTexture;
@@ -117,8 +116,6 @@ export default class Renderer {
             TEXCOORD_0: 1,
             NORMAL: 2,
         };
-
-        console.log(primitive.attributes);
 
         for (const name in primitive.attributes) {
             const accessor = primitive.attributes[name];
@@ -197,6 +194,7 @@ export default class Renderer {
 
         mvpMatrix = mat4.clone(mvpMatrix);
         mat4.mul(mvpMatrix, mvpMatrix, node.matrix);
+
 
         if (node.mesh) {
             const program = this.programs.simple;

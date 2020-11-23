@@ -18,7 +18,7 @@ class App extends Application {
         document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
 
         this.loader = new GLTFLoader();
-        await this.loader.load('./common/models/scena/Test1.gltf');
+        await this.loader.load('./common/models/collis/collis.gltf');
 
         // this.initOimoPhysics();
         this.scene = await this.loader.loadScene(this.loader.defaultScene);

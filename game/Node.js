@@ -19,22 +19,35 @@ export default class Node {
             ? mat4.clone(options.matrix)
             : mat4.create();
 
+        let k = this.toEulerAngles(this.rotation);
+        k.roll *= 180 / Math.PI;
+        k.yaw *= 180 / Math.PI;
+        k.pitch *= 180 / Math.PI;
+
         this.body = {
             type: 'box',
-            pos: options.translation
-                ? vec3.clone(options.translation)
-                : vec3.fromValues(0, 0, 0),
-            size: options.scale
-                ? vec3.clone(options.scale)
-                : vec3.fromValues(1, 1, 1),
-            rot: [0, 0, 0],
+            pos: [
+                this.translation[0],
+                this.translation[1],
+                this.translation[2]
+            ],
+            size: [
+                this.scale[0] * 2,
+                this.scale[1] * 2,
+                this.scale[2] * 2
+            ],
+            rot: [k.roll, k.pitch, k.yaw],
+            //rot: [0, 0, 0],
             move: false,
             density: 1,
-            friction: 0.2,
-            restitution: 0.2,
+            friction: 0.8,
+            restitution: 0,
             belongsTo: 1,
             collidesWith: 0xffffffff,
         };
+
+
+        console.log(this.body.rot);
         // this.negScale = new Float32Array(3)
         // for (let i = 0; i < 3; i++) {
         //     if (options.name === "Plane" && i === 1) {
@@ -56,7 +69,12 @@ export default class Node {
         } else if (options.translation || options.rotation || options.scale) {
             if (options.name === "Camera") {
                 this.body.move = true;
-                // this.body.move = true;
+                this.body.type = 'sphere';
+                this.body.pos[1] = 4;
+                this.translation[1] = 4;
+                this.body.size = [1, 1, 1];
+                this.body.density = 1;
+                //this.body.collidesWith = 0xfffffff0;
                 this.updateTransform();
             } else {
                 this.updateMatrix();
@@ -114,14 +132,36 @@ export default class Node {
     }
 
     getGlobalTransform() {
-        console.log(this.options)
-        console.log(this)
         if (!this.parent) {
             return mat4.clone(this.matrix);
         } else {
             let transform = this.parent.getGlobalTransform();
             return mat4.mul(transform, transform, this.matrix);
         }
+    }
+
+    toEulerAngles(kk) {
+        let q = {x: kk[0], y: kk[1], z: kk[2], w: kk[3]};
+        let angles = {roll: 0, pitch: 0, yaw: 0};
+
+        // roll (x-axis rotation)
+        let sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+        let cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+        angles.roll = Math.atan2(sinr_cosp, cosr_cosp);
+
+        // pitch (y-axis rotation)
+        let sinp = 2 * (q.w * q.y - q.z * q.x);
+        if (Math.abs(sinp) >= 1)
+            angles.pitch = Math.sign(sinp) * Math.PI / 2; // use 90 degrees if out of range
+        else
+            angles.pitch = Math.asin(sinp);
+
+        // yaw (z-axis rotation)
+        let siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+        let cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+        angles.yaw = Math.atan2(siny_cosp, cosy_cosp);
+
+        return angles;
     }
 
 }

@@ -19,9 +19,11 @@ export default class PerspectiveCamera extends Camera {
         this.mouseSensitivity = 0.002;
         this.maxSpeed = 3;
         this.friction = 0.2;
-        this.acceleration = 20;
+        this.acceleration = 1;
 
         this.jump = false;
+
+        this.rot = [0, 0, 0];
 
         this.updateMatrix();
 
@@ -33,6 +35,7 @@ export default class PerspectiveCamera extends Camera {
 
     setTransformation(tranformacija) {
         this.transformacija = tranformacija;
+        //this.transformacija.fizik.setQuaternion(this.transformacija.rotation);
     }
 
     updateMatrix() {
@@ -41,67 +44,60 @@ export default class PerspectiveCamera extends Camera {
             this.near, this.far);
     }
 
+    getVelocity(){
+
+
+        let a = this.velocity[0];
+        let b = this.velocity[1];
+        let c = this.velocity[2];
+
+        let v = {
+          x: a,
+          y: b,
+          z: c
+        }
+
+        return v;
+    }
+
+    getRotation(){
+        return this.rotationDeg;
+    }
+
+
+
     update(dt) {
         const c = this.transformacija;
 
         const forward = vec3.set(vec3.create(),
-            -Math.sin(c.rotationDeg[1]), 0, -Math.cos(c.rotationDeg[1]));
+            -Math.sin(this.rot[1]), 0, -Math.cos(this.rot[1]));
         const right = vec3.set(vec3.create(),
-            Math.cos(c.rotationDeg[1]), 0, -Math.sin(c.rotationDeg[1]));
+            Math.cos(this.rot[1]), 0, -Math.sin(this.rot[1]));
 
-        const gravity = vec3.set(vec3.create(), 0, 1, 0);
-
+        const up = vec3.fromValues(0, 1, 0);
 
         // 1: add movement acceleration
         let acc = vec3.create();
+
+        //console.log(forward, right, up);
+
         if (this.keys['KeyW']) {
-            // vec3.add(acc, acc, forward);
-            this.transformacija.fizik.applyImpulse({
-                x: 0,
-                y: 0,
-                z: 0
-            }, {x: 0, y: -0.00000001, z: 0})
-            console.log(this.transformacija.fizik.pos);
+            vec3.add(acc, acc, forward);
         }
         if (this.keys['KeyS']) {
-            this.transformacija.fizik.applyImpulse({
-                x: 0,
-                y: 0,
-                z: 0
-            }, {x: 0, y: 0.00000001, z: 0})
-            console.log(this.transformacija.fizik.pos);
+            vec3.sub(acc, acc, forward);
         }
         if (this.keys['KeyD']) {
-            this.transformacija.fizik.applyImpulse({
-                x: 0,
-                y: 0,
-                z: 0
-            }, {x: 0.00000001, y: 0, z: 0})
-            console.log(this.transformacija.fizik.pos);
+            vec3.add(acc ,acc, right);
         }
         if (this.keys['KeyA']) {
-            this.transformacija.fizik.applyImpulse({
-                x: 0,
-                y: 0,
-                z: 0
-            }, {x: -0.00000001, y: 0, z: 0})
-            console.log(this.transformacija.fizik.pos);
+            vec3.sub(acc, acc, right);
         }
         if (this.keys['Space']) {
-            this.transformacija.fizik.applyImpulse({
-                x: 0,
-                y: 0,
-                z: 0
-            }, {x: 0, y: 0, z: -0.00000001})
-            console.log(this.transformacija.fizik.pos);
+            vec3.add(acc, acc, up);
         }
         if (this.keys['KeyC']) {
-            this.transformacija.fizik.applyImpulse({
-                x: 0,
-                y: 0,
-                z: 0
-            }, {x: 0, y: 0, z: 0.00000001})
-            console.log(this.transformacija.fizik.pos);
+            vec3.sub(acc, acc, up);
         }
 
 
@@ -113,7 +109,8 @@ export default class PerspectiveCamera extends Camera {
             !this.keys['KeyS'] &&
             !this.keys['KeyD'] &&
             !this.keys['KeyA']) {
-            vec3.scale(this.velocity, this.velocity, 1 - this.friction);
+            vec3.scale(this.velocity, this.velocity, 0);
+            c.fizik.resetRotation(0, 0, 0);
         }
 
         // 4: limit speed
@@ -145,22 +142,22 @@ export default class PerspectiveCamera extends Camera {
         const dy = e.movementY;
         const c = this.transformacija;
 
-
-        c.rotationDeg[0] -= dy * this.mouseSensitivity;
-        c.rotationDeg[1] -= dx * this.mouseSensitivity;
+        this.rot[0] -= dy * this.mouseSensitivity;
+        this.rot[1] -= dx * this.mouseSensitivity;
 
         const pi = Math.PI;
         const twopi = pi * 2;
         const halfpi = pi / 2;
 
-        if (c.rotationDeg[0] > halfpi) {
-            c.rotationDeg[0] = halfpi;
+        if (this.rot[0] > halfpi) {
+            this.rot[0] = halfpi;
         }
-        if (c.rotationDeg[0] < -halfpi) {
-            c.rotationDeg[0] = -halfpi;
+        if (this.rot[0] < -halfpi) {
+            this.rot[0] = -halfpi;
         }
 
-        c.rotationDeg[1] = ((c.rotationDeg[1] % twopi) + twopi) % twopi;
+        this.rot[1] = ((this.rot[1] % twopi) + twopi) % twopi;
+        c.rotationDeg = this.rot;
     }
 
     keydownHandler(e) {
