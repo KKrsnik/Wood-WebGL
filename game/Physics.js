@@ -19,24 +19,28 @@ export default class Physics {
     update(dt) {
         this.world.step();
         this.scene.traverse(node => {
+            if (node.camera) {
+                vec3.scaleAndAdd(node.translation, node.translation, node.camera.velocity, dt);
+                node.updateTransform();
+            }
 
-                //node.rotation = mat4.clone(node.fizik.getQuaternion());
-                /*
-                let rot = node.fizik.getQuaternion();
-                node.rotation[0] = rot.x;
-                node.rotation[1] = rot.y;
-                node.rotation[2] = rot.z;
-                node.rotation[3] = rot.w;
-                */
-                //node.translation = mat4.clone(node.fizik.getPosition());
+            //node.rotation = mat4.clone(node.fizik.getQuaternion());
+            /*
+            let rot = node.fizik.getQuaternion();
+            node.rotation[0] = rot.x;
+            node.rotation[1] = rot.y;
+            node.rotation[2] = rot.z;
+            node.rotation[3] = rot.w;
+            */
+            //node.translation = mat4.clone(node.fizik.getPosition());
 
-                let pos = node.fizik.getPosition();
-                node.translation[0] = pos.x;
-                node.translation[1] = pos.y;
-                node.translation[2] = pos.z;
-                node.translation[3] = pos.w;
+            let pos = node.fizik.getPosition();
+            node.translation[0] = pos.x;
+            node.translation[1] = pos.y;
+            node.translation[2] = pos.z;
+            node.translation[3] = pos.w;
 
-                node.updateMatrix();
+            node.updateMatrix();
         });
     }
 

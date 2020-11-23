@@ -42,7 +42,6 @@ export default class PerspectiveCamera extends Camera {
     }
 
     update(dt) {
-
         const c = this.transformacija;
 
         const forward = vec3.set(vec3.create(),
@@ -53,26 +52,56 @@ export default class PerspectiveCamera extends Camera {
         const gravity = vec3.set(vec3.create(), 0, 1, 0);
 
 
-
         // 1: add movement acceleration
         let acc = vec3.create();
         if (this.keys['KeyW']) {
-            vec3.add(acc, acc, forward);
+            // vec3.add(acc, acc, forward);
+            this.transformacija.fizik.applyImpulse({
+                x: 0,
+                y: 0,
+                z: 0
+            }, {x: 0, y: -0.00000001, z: 0})
+            console.log(this.transformacija.fizik.pos);
         }
         if (this.keys['KeyS']) {
-            vec3.sub(acc, acc, forward);
+            this.transformacija.fizik.applyImpulse({
+                x: 0,
+                y: 0,
+                z: 0
+            }, {x: 0, y: 0.00000001, z: 0})
+            console.log(this.transformacija.fizik.pos);
         }
         if (this.keys['KeyD']) {
-            vec3.add(acc, acc, right);
+            this.transformacija.fizik.applyImpulse({
+                x: 0,
+                y: 0,
+                z: 0
+            }, {x: 0.00000001, y: 0, z: 0})
+            console.log(this.transformacija.fizik.pos);
         }
         if (this.keys['KeyA']) {
-            vec3.sub(acc, acc, right);
+            this.transformacija.fizik.applyImpulse({
+                x: 0,
+                y: 0,
+                z: 0
+            }, {x: -0.00000001, y: 0, z: 0})
+            console.log(this.transformacija.fizik.pos);
         }
         if (this.keys['Space']) {
-            vec3.add(acc, acc, gravity);
+            this.transformacija.fizik.applyImpulse({
+                x: 0,
+                y: 0,
+                z: 0
+            }, {x: 0, y: 0, z: -0.00000001})
+            console.log(this.transformacija.fizik.pos);
         }
-        if (!this.keys['Space']) {
-            vec3.sub(acc, acc, gravity);
+        if (this.keys['KeyC']) {
+            this.transformacija.fizik.applyImpulse({
+                x: 0,
+                y: 0,
+                z: 0
+            }, {x: 0, y: 0, z: 0.00000001})
+            console.log(this.transformacija.fizik.pos);
         }
 
 
