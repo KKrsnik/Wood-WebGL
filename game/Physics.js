@@ -16,22 +16,22 @@ export default class Physics {
         });
 
         this.scene.traverse(node => {
-            //console.log(node);
+            console.log(node);
             if(node.camera){
               node.fizik = this.world.add(node.body);
               console.log(node);
             }
+            if(node.options.name === "Light"){
+              console.log(node);
+            }
             if(node.options.name === "Cube"){
               node.fizik = this.world.add(node.body);
-              console.log(node);
             }
             if(node.options.name === "Cube.001"){
               node.fizik = this.world.add(node.body);
-              console.log(node);
             }
             if(node.options.name === "Plane"){
               node.fizik = this.world.add(node.body);
-              console.log(node);
             }
         });
     }
@@ -39,7 +39,7 @@ export default class Physics {
     update(dt) {
         this.world.step();
         this.scene.traverse(node => {
-            if (node.camera) {
+            if (node.camera && node.options.name === "Camera") {
                 node.fizik.applyImpulse({x: 0, y: 0, z: 0}, node.camera.getVelocity());
                 //node.fizik.linearVelocity = node.camera.getVelocity();
 

@@ -7,6 +7,8 @@ import SceneLoader from './SceneLoader.js';
 import SceneBuilder from './SceneBuilder.js';
 import GLTFLoader from './GLTFLoader.js';
 
+import OrthographicCamera from './OrthographicCamera.js';
+
 class App extends Application {
 
     async start() {
@@ -33,10 +35,17 @@ class App extends Application {
         }
 
         this.physics = new Physics(this.scene);
-
         this.renderer = new Renderer(this.gl);
         this.renderer.prepareScene(this.scene);
         this.resize();
+
+        this.scene.traverse(node => {
+            if(node.options.name === "Light"){
+              this.light = node;
+            }
+        });
+
+        this.light.camera = new OrthographicCamera();
     }
 
     /*
@@ -92,7 +101,7 @@ class App extends Application {
 
     render() {
         if (this.renderer) {
-            this.renderer.render(this.scene, this.camera);
+            this.renderer.render(this.scene, this.camera, this.light);
         }
     }
 
@@ -115,3 +124,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const gui = new dat.GUI();
     gui.add(app, 'enableCamera');
 });
+

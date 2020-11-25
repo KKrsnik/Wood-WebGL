@@ -276,6 +276,10 @@ export default class GLTFLoader {
         }
     }
 
+    async loadLight(nameOrIndex){
+        const gltfSpec = this.findByNameOrIndex(this.gltf.lights, nameOrIndex);
+    }
+
     async loadNode(nameOrIndex) {
         const gltfSpec = this.findByNameOrIndex(this.gltf.nodes, nameOrIndex);
         if (this.cache.has(gltfSpec)) {

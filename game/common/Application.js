@@ -18,10 +18,12 @@ export default class Application {
             });
         } catch (error) {
         }
-
         if (!this.gl) {
             console.log('Cannot create WebGL 2.0 context');
         }
+        const ext = this.gl.getExtension('WEBGL_depth_texture');
+        
+
     }
 
     _update() {

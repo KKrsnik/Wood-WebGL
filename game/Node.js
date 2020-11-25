@@ -40,14 +40,14 @@ export default class Node {
             //rot: [0, 0, 0],
             move: false,
             density: 1,
-            friction: 0.8,
+            friction: 1,
             restitution: 0,
             belongsTo: 1,
             collidesWith: 0xffffffff,
         };
+        
+        console.log(this.translation, this.body.pos);
 
-
-        console.log(this.body.rot);
         // this.negScale = new Float32Array(3)
         // for (let i = 0; i < 3; i++) {
         //     if (options.name === "Plane" && i === 1) {
@@ -70,13 +70,18 @@ export default class Node {
             if (options.name === "Camera") {
                 this.body.move = true;
                 this.body.type = 'sphere';
-                this.body.pos[1] = 4;
-                this.translation[1] = 4;
+                //this.body.pos[1] = 4;
+                //this.translation[1] = 4;
                 this.body.size = [1, 1, 1];
                 this.body.density = 1;
                 //this.body.collidesWith = 0xfffffff0;
                 this.updateTransform();
-            } else {
+            } else if (options.name === "Light") {
+                console.log("light");
+                this.updateMatrix();
+            } else if (options.name === "Cylinder"){
+                this.body.type = 'cylinder';
+            }else {
                 this.updateMatrix();
             }
 

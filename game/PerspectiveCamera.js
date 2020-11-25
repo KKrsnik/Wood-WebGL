@@ -14,10 +14,10 @@ export default class PerspectiveCamera extends Camera {
         this.aspect = options.aspect || 1.5;
         this.fov = 1.0;
         this.near = options.near || 1;
-        this.far = options.far || Infinity;
+        this.far = 1000;
         this.velocity = vec3.fromValues(0, 0, 0);
         this.mouseSensitivity = 0.002;
-        this.maxSpeed = 3;
+        this.maxSpeed = 2;
         this.friction = 0.2;
         this.acceleration = 1;
 
@@ -74,7 +74,7 @@ export default class PerspectiveCamera extends Camera {
         const right = vec3.set(vec3.create(),
             Math.cos(this.rot[1]), 0, -Math.sin(this.rot[1]));
 
-        const up = vec3.fromValues(0, 1, 0);
+        const up = vec3.fromValues(0, 10000, 0);
 
         // 1: add movement acceleration
         let acc = vec3.create();
@@ -96,9 +96,6 @@ export default class PerspectiveCamera extends Camera {
         if (this.keys['Space']) {
             vec3.add(acc, acc, up);
         }
-        if (this.keys['KeyC']) {
-            vec3.sub(acc, acc, up);
-        }
 
 
         // 2: update velocity
@@ -118,6 +115,8 @@ export default class PerspectiveCamera extends Camera {
         if (len > this.maxSpeed) {
             vec3.scale(this.velocity, this.velocity, this.maxSpeed / len);
         }
+
+
 
     }
 

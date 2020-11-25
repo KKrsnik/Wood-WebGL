@@ -56,6 +56,7 @@ export function buildPrograms(gl, shaders) {
 }
 
 export function createTexture(gl, options) {
+
     const target  = options.target  || gl.TEXTURE_2D;
     const iformat = options.iformat || gl.RGBA;
     const format  = options.format  || gl.RGBA;

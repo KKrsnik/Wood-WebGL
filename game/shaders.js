@@ -4,16 +4,37 @@ layout (location = 0) in vec4 aPosition;
 layout (location = 1) in vec2 aTexCoord;
 layout (location = 2) in vec4 aNormal;
 
-uniform mat4 uMvpMatrix;
+uniform mat4 uVMatrix;
+uniform mat4 uPMatrix;
+uniform mat4 uMMatrix;
+uniform mat4 uNMatrix;
+uniform mat4 uShadowTex;
+
+uniform vec3 lightPos;
 
 
 out vec2 vTexCoord;
-out vec3 vNormal;
+out vec4 vNormal;
+out vec3 vVertexPos;
+out vec3 vLightPos;
+
+out vec4 vProjectedTexCoord;
 
 void main() {
     vTexCoord = aTexCoord;
-    gl_Position = uMvpMatrix * aPosition;
-    vNormal = aNormal.xyz;
+
+    vec4 worldPos = uMMatrix * aPosition;
+
+    vVertexPos = worldPos.xyz;
+
+    vLightPos = (uMMatrix * vec4(lightPos, 1.0)).xyz;
+
+    vProjectedTexCoord = uShadowTex * uMMatrix * aPosition;
+
+    gl_Position = uPMatrix * uVMatrix * worldPos;
+
+
+    vNormal = aNormal;
 }
 `;
 
@@ -21,28 +42,142 @@ const fragment = `#version 300 es
 precision mediump float;
 
 uniform mediump sampler2D uTexture;
+uniform mediump sampler2D uDepth;
+
+
+uniform vec3 lightColor;
+uniform vec3 uDirLight;
+uniform vec3 uDirColor;
+
 
 in vec2 vTexCoord;
-in vec3 vNormal;
+in vec4 vNormal;
+in vec3 vVertexPos;
+in vec3 vLightPos;
+
+in vec4 vProjectedTexCoord;
+
 
 out vec4 oColor;
 
 
 void main() {
-    
-    highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
-    
-    highp vec3 directionalLightColor = vec3(1, 1, 1);
-    highp vec3 directionalVector = normalize(vec3(0.85, 0.8, 0.75));
 
-    highp float directional = max(dot(vNormal, directionalVector), 0.0);
-    vec3 vLighting = ambientLight + (directionalLightColor * directional);
-    vec4 color = texture(uTexture, vTexCoord);
-    
-    oColor = vec4(color.rgb * vLighting , color.a);
+    vec3 proj = vProjectedTexCoord.xyz / vProjectedTexCoord.w;
+    proj = proj * 0.5 + 0.5;
+    float closestDepth = texture(uDepth, proj.xy).x;
+    float check = proj.z;
+    float shadow = check > closestDepth  ? 1.0 : 0.0;
+
+    vec3 N = normalize(vNormal).xyz;
+    vec3 L = normalize(vLightPos - vVertexPos);
+    vec3 D = normalize(uDirLight);
+
+    vec3 ambient = vec3(0.5, 0.5, 0.5);
+
+    float lambertian = max(dot(L, N), 0.0);
+    float lambertian2 = max(dot(D, N), 0.0);
+
+    float specular = 0.0;
+
+    if(lambertian > 0.0) {
+      vec3 R = reflect(-L, N);      // Reflected light vector
+      vec3 V = normalize(-vVertexPos); // Vector to viewer
+      // Compute the specular term
+      float specAngle = max(dot(R, V), 0.0);
+      specular = pow(specAngle, 2.0);
+    }
+
+
+
+    vec3 color = ambient + lambertian * lightColor  + specular * lightColor;
+    vec3 tex = texture(uTexture, vTexCoord).xyz;
+    oColor = vec4((color * tex +  (lambertian2 * uDirColor) * tex) * shadow, 1.0);
 }
 `;
 
+const depthv = `#version 300 es
+
+layout (location = 0) in vec4 aPosition;
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec4 aNormal;
+
+uniform mat4 uVMatrix;
+uniform mat4 uPMatrix;
+uniform mat4 uMMatrix;
+
+out vec4 uPos;
+
+void main() {
+    gl_Position = uPMatrix * uVMatrix * uMMatrix * aPosition;
+    uPos = uVMatrix*uMMatrix*aPosition;
+}
+`;
+
+const depthf = `#version 300 es
+precision mediump int;
+precision highp float;
+
+in vec4 uPos;
+
+out vec4 oColor;
+
+void main(){
+    float z = uPos.z;
+    oColor = vec4(z, 0.0, 0.0, 1.0);
+}
+`;
+
+const waterv = `#version 300 es
+
+layout (location = 0) in vec4 aPosition;
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec4 aNormal;
+
+uniform mat4 uVMatrix;
+uniform mat4 uPMatrix;
+uniform mat4 uMMatrix;
+uniform mat4 uNMatrix;
+uniform mat4 uShadowTex;
+
+uniform vec3 lightPos;
+uniform float t;
+
+
+out vec2 vTexCoord;
+out vec4 vNormal;
+out vec3 vVertexPos;
+out vec3 vLightPos;
+
+out vec4 vProjectedTexCoord;
+
+
+float rand(vec2 co){
+    return sin(dot(co, vec2(0, 0)) * t * 360.0);
+}
+
+
+void main() {
+    vTexCoord = aTexCoord;
+
+    vec4 worldPos = uMMatrix * aPosition;
+
+    vVertexPos = worldPos.xyz;
+
+    vLightPos = (uMMatrix * vec4(lightPos, 1.0)).xyz;
+
+    vProjectedTexCoord = uShadowTex * uMMatrix * aPosition;
+
+    gl_Position = uPMatrix * uVMatrix * worldPos;
+
+
+    vNormal = vec4(rand(aNormal.xy), rand(aNormal.xz), rand(aNormal.yz), 1.0);
+}
+`;
+
+
 export default {
-    simple: { vertex, fragment }
+    simple: { vertex: vertex, fragment: fragment },
+    depth: { vertex: depthv, fragment: depthf },
+    water: {vertex: waterv, fragment: fragment}
 };
