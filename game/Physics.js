@@ -1,3 +1,6 @@
+import Enemy from './Enemy.js';
+import Weapon from './Weapon.js';
+
 const vec3 = glMatrix.vec3;
 const mat4 = glMatrix.mat4;
 
@@ -15,13 +18,14 @@ export default class Physics {
             gravity: [0, -9.8, 0]
         });
 
+        this.enemyCount = 0;
+        this.win = false;
+        this.timeLeft = 7.0;
+
         this.scene.traverse(node => {
             console.log(node);
             if(node.camera){
               node.fizik = this.world.add(node.body);
-              console.log(node);
-            }
-            if(node.options.name === "Light"){
               console.log(node);
             }
             if(node.options.name === "Cube"){
@@ -32,6 +36,14 @@ export default class Physics {
             }
             if(node.options.name === "Plane"){
               node.fizik = this.world.add(node.body);
+            }
+            if(node.options.name === "Enemy"){
+              node.fizik = this.world.add(node.body);
+              node.enemy = new Enemy(node);
+              this.enemyCount++;
+            }
+            if(node.options.name === "Weapon"){
+              node.weapon = new Weapon(node);
             }
         });
     }
@@ -50,9 +62,53 @@ export default class Physics {
                 node.translation[1] = pos.y;
                 node.translation[2] = pos.z;
                 node.updateTransform();
-                //console.log(node.fizik);
+
+                this.scene.traverse(w => {
+                    if(w.weapon){
+                        w.weapon.update(dt, node, w.matrix);
+                        w.updateTransform();
+                    }
+                });
+
+                if(node.camera.isAttacking()){
+                    this.scene.traverse(enemy => {
+                        if(enemy.enemy){
+                            let a = node.fizik.getPosition();
+                            let b = enemy.fizik.getPosition();
+                            let x = Math.abs(a.x - b.x);
+                            let y = Math.abs(a.y - b.y);
+                            let z = Math.abs(a.z - b.z);
+
+                            let dist = x + y + z;
+                            if(dist < 10.0){
+                              enemy.fizik.resetPosition(0, -200, 0);
+                              this.enemyCount--;
+                            }
+                        }
+
+                    });
+                }
+            }
+            if (node.enemy){
+                node.enemy.update(dt);
+                node.fizik.applyImpulse({x : 0, y : 0, z : 0}, node.enemy.getVelocity());
+                let pos = node.fizik.getPosition();
+                node.translation[0] = pos.x;
+                node.translation[1] = pos.y;
+                node.translation[2] = pos.z;
+                node.updateTransform();
             }
         });
+        if(this.enemyCount === 0){
+            document.getElementById("win").style.visibility = "visible";
+            document.exitPointerLock();
+            this.win = true;
+        }
+        if(this.timeLeft < 0 && !this.win){
+            document.getElementById("lose").style.visibility = "visible";
+            document.exitPointerLock();
+        }
+        this.timeLeft -= dt;
     }
 
     intervalIntersection(min1, max1, min2, max2) {
@@ -125,5 +181,13 @@ export default class Physics {
     //     vec3.add(a.translation, a.translation, minDirection);
     //     a.updateTransform();
     // }
+
+    distance(a, b){
+        let x = Math.abs(a[0] - b[0]);
+        let y = Math.abs(a[1] - b[1]);
+        let z = Math.abs(a[2] - b[2]);
+
+        return x+y+z;
+    }
 
 }

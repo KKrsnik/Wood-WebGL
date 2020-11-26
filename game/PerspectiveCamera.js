@@ -19,9 +19,13 @@ export default class PerspectiveCamera extends Camera {
         this.mouseSensitivity = 0.002;
         this.maxSpeed = 2;
         this.friction = 0.2;
-        this.acceleration = 1;
+        this.acceleration = 100;
 
         this.jump = false;
+
+        this.attackTime = 0.5;
+        this.attack = false;
+
 
         this.rot = [0, 0, 0];
 
@@ -30,6 +34,7 @@ export default class PerspectiveCamera extends Camera {
         this.mousemoveHandler = this.mousemoveHandler.bind(this);
         this.keydownHandler = this.keydownHandler.bind(this);
         this.keyupHandler = this.keyupHandler.bind(this);
+        this.attackHandler = this.attackHandler.bind(this);
         this.keys = {};
     }
 
@@ -67,6 +72,13 @@ export default class PerspectiveCamera extends Camera {
 
 
     update(dt) {
+        if(this.attackTime > 0 && this.attack ){
+            this.attackTime -= dt;
+        }
+        if(this.attackTime < 0.0){
+            this.attack = false;
+            this.attackTime = 0.5;
+        }
         const c = this.transformacija;
 
         const forward = vec3.set(vec3.create(),
@@ -79,7 +91,6 @@ export default class PerspectiveCamera extends Camera {
         // 1: add movement acceleration
         let acc = vec3.create();
 
-        //console.log(forward, right, up);
 
         if (this.keys['KeyW']) {
             vec3.add(acc, acc, forward);
@@ -107,7 +118,8 @@ export default class PerspectiveCamera extends Camera {
             !this.keys['KeyD'] &&
             !this.keys['KeyA']) {
             vec3.scale(this.velocity, this.velocity, 0);
-            c.fizik.resetRotation(0, 0, 0);
+            let pos = c.fizik.getPosition();
+            c.fizik.resetPosition(pos.x, pos.y, pos.z);
         }
 
         // 4: limit speed
@@ -124,16 +136,22 @@ export default class PerspectiveCamera extends Camera {
         document.addEventListener('mousemove', this.mousemoveHandler);
         document.addEventListener('keydown', this.keydownHandler);
         document.addEventListener('keyup', this.keyupHandler);
+        document.addEventListener('mousedown', this.attackHandler);
     }
 
     disable() {
         document.removeEventListener('mousemove', this.mousemoveHandler);
         document.removeEventListener('keydown', this.keydownHandler);
         document.removeEventListener('keyup', this.keyupHandler);
+        document.removeEventListener('mousedown', this.attackHandler);
 
         for (let key in this.keys) {
             this.keys[key] = false;
         }
+    }
+
+    attackHandler(e) {
+        this.attack = true;
     }
 
     mousemoveHandler(e) {
@@ -165,6 +183,10 @@ export default class PerspectiveCamera extends Camera {
 
     keyupHandler(e) {
         this.keys[e.code] = false;
+    }
+
+    isAttacking(){
+        return this.attack;
     }
 
 

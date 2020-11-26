@@ -45,8 +45,8 @@ export default class Node {
             belongsTo: 1,
             collidesWith: 0xffffffff,
         };
-        
-        console.log(this.translation, this.body.pos);
+
+        console.log(this.body.rot);
 
         // this.negScale = new Float32Array(3)
         // for (let i = 0; i < 3; i++) {
@@ -76,15 +76,17 @@ export default class Node {
                 this.body.density = 1;
                 //this.body.collidesWith = 0xfffffff0;
                 this.updateTransform();
-            } else if (options.name === "Light") {
-                console.log("light");
-                this.updateMatrix();
             } else if (options.name === "Cylinder"){
                 this.body.type = 'cylinder';
+            } else if (options.name === "Enemy"){
+                this.body.type = 'sphere';
+                this.body.move = true;
+                this.body.size = [1, 1, 1];
+                this.body.density = 1;
+                this.updateTransform();
             }else {
                 this.updateMatrix();
             }
-
         }
 
         this.camera = options.camera || null;

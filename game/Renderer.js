@@ -19,6 +19,7 @@ export default class Renderer {
         gl.clearColor(1, 1, 1, 1);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
+        this.lightHeight = 50;
 
 
         this.createShadowMapBuffer();
@@ -223,19 +224,19 @@ export default class Renderer {
         return mvpMatrix;
     }
 
-    render(scene, camera, light) {
+    render(scene, camera, light, dt) {
+
         const gl = this.gl;
         gl.clearColor(0.5, 0.8, 1.0, 1.0);
 
-        this.renderShadowMap(scene, light);
+        //this.renderShadowMap(scene, light);
 
-        this.renderWater(scene, camera, light);
+        //this.renderWater(scene, camera, light);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.clearDepth(1.0);
 
 
         const program = this.programs;
@@ -250,17 +251,18 @@ export default class Renderer {
         mat4.lookAt(lightWorldMatrix, light.translation, [0, 0, 0], [0, 1, 0]);
 
         const lightPerspectiveMatrix = mat4.create();
-        mat4.perspective(lightPerspectiveMatrix,
-            1.0, 3.6623748211731044,
-            1, 1000);
-        const i = mat4.create();
+        mat4.ortho(lightPerspectiveMatrix, -100, 100, -100, 100, -1, 200);
 
-        mat4.invert(i, lightPerspectiveMatrix);
+        const i = mat4.create();
+        const j = mat4.create();
+        mat4.invert(i, lightWorldMatrix);
+        mat4.invert(j, lightPerspectiveMatrix);
 
         const textureMatrix = mat4.create();
+        mat4.mul(textureMatrix, lightPerspectiveMatrix, lightWorldMatrix);
 
-        mat4.mul(textureMatrix, i, lightWorldMatrix);
 
+        //mat4.invert(textureMatrix, textureMatrix);
         const lightDirection = vec3.create();
 
         vec3.sub(lightDirection, [0,0,0], light.translation);
@@ -275,7 +277,7 @@ export default class Renderer {
         gl.uniform3fv(program.simple.uniforms.uDirColor, [0.0, 0.4, 1.0]);
 
 
-        gl.uniform3fv(program.simple.uniforms.lightPos, [40, 3, -30]);
+        gl.uniform3fv(program.simple.uniforms.lightPos, [0, 10, 0]);
         gl.uniform3fv(program.simple.uniforms.lightColor, [1.0, 0.3, 0.0]);
 
         gl.uniform1f(program.simple.uniforms.Ka, 1.0);
@@ -283,13 +285,26 @@ export default class Renderer {
         gl.uniform1f(program.simple.uniforms.Ks, 1.0);
         gl.uniform1f(program.simple.uniforms.shininessVal, 2.0);
 
+        const weaponWorld = mat4.create();
+        mat4.lookAt(weaponWorld, [-4, -100, 5], [-4, -100, -5], [0, 1, 0]);
 
+        const weaponPerspective = mat4.create();
+        mat4.perspective(weaponPerspective,
+            1, 3,
+            0.1, 10);
+
+        let weapon;
         for (const node of scene.nodes) {
             if(node.options.name !== "Water"){
                 this.renderNode(node, vMatrix, pMatrix, 0, textureMatrix);
             }
+            if(node.options.name === "Weapon"){
+                weapon = node;
+            }
             //this.renderNode(node, lightWorldMatrix, lightPerspectiveMatrix, 0, textureMatrix);
         }
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+        this.renderNode(weapon, weaponWorld, weaponPerspective, 0, textureMatrix);
     }
 
     renderNode(node, vMatrix, pMatrix, shaderProgram, textureMatrix) {
@@ -299,19 +314,21 @@ export default class Renderer {
         pMatrix = mat4.clone(pMatrix);
 
 
+
         if (node.mesh) {
             this.program;
             if(shaderProgram === 0){
                 this.program = this.programs.simple;
 
-                gl.uniformMatrix4fv(this.program.uniforms.uShadowTex, false, textureMatrix);
+                //gl.uniformMatrix4fv(this.program.uniforms.uShadowTex, false, textureMatrix);
+
 
             }else if(shaderProgram === 1){
                 this.program = this.programs.depth;
             }else if(shaderProgram === 2){
                 this.program = this.programs.water;
 
-                gl.uniformMatrix4fv(this.program.uniforms.uShadowTex, false, textureMatrix);
+                //gl.uniformMatrix4fv(this.program.uniforms.uShadowTex, false, textureMatrix);
             }
             gl.uniformMatrix4fv(this.program.uniforms.uVMatrix, false, vMatrix);
             gl.uniformMatrix4fv(this.program.uniforms.uPMatrix, false, pMatrix);
@@ -320,12 +337,13 @@ export default class Renderer {
             mat4.invert(nMatrix, node.matrix);
             gl.uniformMatrix4fv(this.program.uniforms.uNMatrix, false, nMatrix);
             for (const primitive of node.mesh.primitives) {
+                //console.log(node.options.name);
                 this.renderPrimitive(primitive);
             }
         }
 
         for (const child of node.children) {
-            this.renderNode(child, vMatrix, pMatrix, shaderProgram);
+            this.renderNode(child, vMatrix, pMatrix, shaderProgram, textureMatrix);
         }
     }
 
@@ -360,15 +378,13 @@ export default class Renderer {
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowBuffer);
         gl.viewport(0, 0, 512, 512);
 
-        gl.clear(gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
         const lightWorldMatrix = mat4.create();
         mat4.lookAt(lightWorldMatrix, light.translation, [0, 0, 0], [0, 1, 0]);
 
         const lightPerspectiveMatrix = mat4.create();
-        mat4.perspective(lightPerspectiveMatrix,
-            1.0, 3.6623748211731044,
-            1, 200);
+        mat4.ortho(lightPerspectiveMatrix, -100, 100, -100, 100, -1, 200);
 
         const program = this.programs;
         gl.useProgram(program.depth.program);

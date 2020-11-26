@@ -20,7 +20,7 @@ class App extends Application {
         document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
 
         this.loader = new GLTFLoader();
-        await this.loader.load('./common/models/collis/collis.gltf');
+        await this.loader.load('./common/models/enemytest/test.gltf');
 
         // this.initOimoPhysics();
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
@@ -45,7 +45,7 @@ class App extends Application {
             }
         });
 
-        this.light.camera = new OrthographicCamera();
+        //this.light.camera = new OrthographicCamera();
     }
 
     /*
@@ -100,8 +100,10 @@ class App extends Application {
     }
 
     render() {
+        const t = this.time = Date.now();
+        const dt = (this.time - this.startTime) * 0.001;
         if (this.renderer) {
-            this.renderer.render(this.scene, this.camera, this.light);
+            this.renderer.render(this.scene, this.camera, this.light, dt);
         }
     }
 
@@ -124,4 +126,3 @@ document.addEventListener('DOMContentLoaded', () => {
     const gui = new dat.GUI();
     gui.add(app, 'enableCamera');
 });
-

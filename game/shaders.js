@@ -29,7 +29,7 @@ void main() {
 
     vLightPos = (uMMatrix * vec4(lightPos, 1.0)).xyz;
 
-    vProjectedTexCoord = uShadowTex * uMMatrix * aPosition;
+    vProjectedTexCoord = uShadowTex * worldPos;
 
     gl_Position = uPMatrix * uVMatrix * worldPos;
 
@@ -63,11 +63,16 @@ out vec4 oColor;
 
 void main() {
 
-    vec3 proj = vProjectedTexCoord.xyz / vProjectedTexCoord.w;
-    proj = proj * 0.5 + 0.5;
-    float closestDepth = texture(uDepth, proj.xy).x;
-    float check = proj.z;
-    float shadow = check > closestDepth  ? 1.0 : 0.0;
+    vec3 projCoords = vProjectedTexCoord.xyz / vProjectedTexCoord.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(uDepth, projCoords.xy).r;
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+
 
     vec3 N = normalize(vNormal).xyz;
     vec3 L = normalize(vLightPos - vVertexPos);
@@ -85,14 +90,14 @@ void main() {
       vec3 V = normalize(-vVertexPos); // Vector to viewer
       // Compute the specular term
       float specAngle = max(dot(R, V), 0.0);
-      specular = pow(specAngle, 2.0);
+      specular = pow(specAngle, 4.0);
     }
 
 
 
     vec3 color = ambient + lambertian * lightColor  + specular * lightColor;
     vec3 tex = texture(uTexture, vTexCoord).xyz;
-    oColor = vec4((color * tex +  (lambertian2 * uDirColor) * tex) * shadow, 1.0);
+    oColor = vec4((color * tex +  (lambertian2 * uDirColor) * tex), 1.0);
 }
 `;
 
@@ -106,11 +111,10 @@ uniform mat4 uVMatrix;
 uniform mat4 uPMatrix;
 uniform mat4 uMMatrix;
 
-out vec4 uPos;
 
 void main() {
     gl_Position = uPMatrix * uVMatrix * uMMatrix * aPosition;
-    uPos = uVMatrix*uMMatrix*aPosition;
+    //uPos = uVMatrix * uMMatrix * aPosition;
 }
 `;
 
@@ -118,13 +122,12 @@ const depthf = `#version 300 es
 precision mediump int;
 precision highp float;
 
-in vec4 uPos;
-
 out vec4 oColor;
 
 void main(){
-    float z = uPos.z;
-    oColor = vec4(z, 0.0, 0.0, 1.0);
+    gl_FragDepth = gl_FragCoord.z;
+    //oColor = vec4(z, z, z, z);
+    //oColor = vec4(gl_FragCoord.z, 0.0, 0.0, 0.0); // Write the z-value in R
 }
 `;
 
