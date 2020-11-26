@@ -20,7 +20,8 @@ export default class Physics {
 
         this.enemyCount = 0;
         this.win = false;
-        this.timeLeft = 7.0;
+        this.timeLeft = 45.0;
+        this.slain = 0;
 
         this.scene.traverse(node => {
             console.log(node);
@@ -80,9 +81,10 @@ export default class Physics {
                             let z = Math.abs(a.z - b.z);
 
                             let dist = x + y + z;
-                            if(dist < 10.0){
+                            if(dist < 5.0){
                               enemy.fizik.resetPosition(0, -200, 0);
                               this.enemyCount--;
+                              this.slain++;
                             }
                         }
 
@@ -97,17 +99,40 @@ export default class Physics {
                 node.translation[1] = pos.y;
                 node.translation[2] = pos.z;
                 node.updateTransform();
+
+                let x = Math.abs(pos.x);
+                let y = Math.abs(pos.y);
+                let z = Math.abs(pos.z);
+
+                let dist = x + z;
+                //console.log(dist);
+                if(dist < 5){
+                    //console.log("hehe");
+                    node.fizik.resetPosition(0, -200, 0);
+                    this.enemyCount--;
+                    this.timeLeft -= 2;
+                }
             }
         });
-        if(this.enemyCount === 0){
+        if(this.enemyCount === 0 && this.slain > 0){
             document.getElementById("win").style.visibility = "visible";
             document.exitPointerLock();
             this.win = true;
         }
-        if(this.timeLeft < 0 && !this.win){
+        if(this.enemyCount === 0 && this.slain === 0 && !this.win){
+            console.log("enemy 0 slain 0");
             document.getElementById("lose").style.visibility = "visible";
             document.exitPointerLock();
         }
+        if(this.timeLeft < 0 && !this.win ){
+            console.log("time");
+            document.getElementById("lose").style.visibility = "visible";
+            document.exitPointerLock();
+        }
+
+        document.getElementById("time").innerHTML = Math.floor(this.timeLeft);
+        document.getElementById("left").innerHTML = this.enemyCount;
+
         this.timeLeft -= dt;
     }
 

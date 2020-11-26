@@ -2,6 +2,8 @@
 <html>
 <head>
     <title>The Woods</title>
+    <meta charset="UTF-8">
+
 
     <link rel="stylesheet" type="text/css" href="common/style.css">
 
@@ -14,6 +16,17 @@
 <body>
 <div class="fullscreen">
     <canvas></canvas>
+</div>
+
+<div id="score" style="position: absolute; top:0px; background-color:white; width: 10%;">
+    <label>
+      Preostali čas:
+      <label id="time"></label>
+    </label></br>
+    <label>
+      Ostali nasprotniki:
+      <label id="left"></label>
+    </label>
 </div>
 <div id="win" class="fullscreen" style="visibility: hidden; background-color: white;position: absolute;  top:0px;text-align:center;">
     <a href="game.html">

@@ -95,7 +95,7 @@ export default class Enemy extends Node{
         const twopi = pi * 2;
         const halfpi = pi / 2;
 
-        this.rot[1] += dt;
+        this.rot[1] += dt * twopi;
         this.rot[1] = ((this.rot[1] % twopi) + twopi) % twopi;
         c.rotationDeg = this.rot;
     }
