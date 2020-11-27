@@ -72,8 +72,8 @@ export default class Node {
                 this.body.type = 'sphere';
                 //this.body.pos[1] = 4;
                 //this.translation[1] = 4;
-                this.body.size = [1, 1, 1];
-                this.body.density = 1;
+                this.body.size = [1.5, 1.5, 1.5];
+                this.body.density = 0.1;
                 //this.body.collidesWith = 0xfffffff0;
                 this.updateTransform();
             } else if (options.name === "Cylinder"){
@@ -82,7 +82,7 @@ export default class Node {
                 this.body.type = 'sphere';
                 this.body.move = true;
                 this.body.size = [1, 1, 1];
-                this.body.density = 1;
+                this.body.density = 5;
                 this.updateTransform();
             }else {
                 this.updateMatrix();

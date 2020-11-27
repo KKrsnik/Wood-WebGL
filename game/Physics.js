@@ -53,8 +53,9 @@ export default class Physics {
         this.world.step();
         this.scene.traverse(node => {
             if (node.camera && node.options.name === "Camera") {
-                node.fizik.applyImpulse({x: 0, y: 0, z: 0}, node.camera.getVelocity());
-                //node.fizik.linearVelocity = node.camera.getVelocity();
+                //node.fizik.applyImpulse({x: 0, y: 0, z: 0}, node.camera.getVelocity());
+                let v = node.camera.getVelocity();
+                node.fizik.linearVelocity.set(v.x, v.y, v.z);
 
                 //console.log(node.translation, node.fizik.pos);
 
@@ -63,6 +64,9 @@ export default class Physics {
                 node.translation[1] = pos.y;
                 node.translation[2] = pos.z;
                 node.updateTransform();
+                if(pos.y < -20){
+                    node.fizik.resetPosition(0,0,0);
+                }
 
                 this.scene.traverse(w => {
                     if(w.weapon){
@@ -120,17 +124,17 @@ export default class Physics {
             this.win = true;
         }
         if(this.enemyCount === 0 && this.slain === 0 && !this.win){
-            console.log("enemy 0 slain 0");
+            //console.log("enemy 0 slain 0");
             document.getElementById("lose").style.visibility = "visible";
             document.exitPointerLock();
         }
         if(this.timeLeft < 0 && !this.win ){
-            console.log("time");
+            //console.log("time");
             document.getElementById("lose").style.visibility = "visible";
             document.exitPointerLock();
         }
 
-        document.getElementById("time").innerHTML = Math.floor(this.timeLeft);
+        document.getElementById("time").innerHTML = Math.ceil(this.timeLeft);
         document.getElementById("left").innerHTML = this.enemyCount;
 
         this.timeLeft -= dt;

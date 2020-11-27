@@ -17,7 +17,7 @@ export default class PerspectiveCamera extends Camera {
         this.far = 1000;
         this.velocity = vec3.fromValues(0, 0, 0);
         this.mouseSensitivity = 0.002;
-        this.maxSpeed = 2;
+        this.maxSpeed = 100;
         this.friction = 0.2;
         this.acceleration = 100;
 
@@ -86,7 +86,8 @@ export default class PerspectiveCamera extends Camera {
         const right = vec3.set(vec3.create(),
             Math.cos(this.rot[1]), 0, -Math.sin(this.rot[1]));
 
-        const up = vec3.fromValues(0, 10000, 0);
+        const up = vec3.fromValues(0, 200, 0);
+        const down = vec3.fromValues(0, -10, 0);
 
         // 1: add movement acceleration
         let acc = vec3.create();
@@ -104,13 +105,13 @@ export default class PerspectiveCamera extends Camera {
         if (this.keys['KeyA']) {
             vec3.sub(acc, acc, right);
         }
-        if (this.keys['Space']) {
-            vec3.add(acc, acc, up);
+        if(this.velocity[1] < 1 && !this.keys['Space']){
+            this.jump = true;
         }
 
 
         // 2: update velocity
-        vec3.scaleAndAdd(this.velocity, this.velocity, acc, dt * this.acceleration);
+        vec3.add(this.velocity, this.velocity, acc);
 
         // 3: if no movement, apply friction
         if (!this.keys['KeyW'] &&
@@ -119,7 +120,7 @@ export default class PerspectiveCamera extends Camera {
             !this.keys['KeyA']) {
             vec3.scale(this.velocity, this.velocity, 0);
             let pos = c.fizik.getPosition();
-            c.fizik.resetPosition(pos.x, pos.y, pos.z);
+            //c.fizik.resetPosition(pos.x, pos.y, pos.z);
         }
 
         // 4: limit speed
@@ -127,6 +128,12 @@ export default class PerspectiveCamera extends Camera {
         if (len > this.maxSpeed) {
             vec3.scale(this.velocity, this.velocity, this.maxSpeed / len);
         }
+        
+        if (this.keys['Space'] && this.jump) {
+            vec3.add(this.velocity, this.velocity, up);
+            this.jump = false;
+        }
+        vec3.add(this.velocity, this.velocity, down);
 
 
 
