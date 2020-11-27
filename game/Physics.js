@@ -150,6 +150,7 @@ export default class Physics {
 
         document.getElementById("time").innerHTML = Math.ceil(this.timeLeft);
         document.getElementById("left").innerHTML = this.enemyCount;
+        document.getElementById("slain").innerHTML = this.slain;
         
         this.timeLeft -= dt;
     }

@@ -227,7 +227,7 @@ export default class Renderer {
     render(scene, camera, light, dt) {
 
         const gl = this.gl;
-        gl.clearColor(0.5, 0.8, 1.0, 1.0);
+        gl.clearColor(0.1, 0.2, 0.5, 1.0);
 
         //this.renderShadowMap(scene, light);
 
@@ -277,7 +277,7 @@ export default class Renderer {
         gl.uniform3fv(program.simple.uniforms.uDirColor, [0.0, 0.4, 1.0]);
 
 
-        gl.uniform3fv(program.simple.uniforms.lightPos, [0, 10, 0]);
+        gl.uniform3fv(program.simple.uniforms.lightPos, [0, 75, 0]);
         gl.uniform3fv(program.simple.uniforms.lightColor, [1.0, 0.3, 0.0]);
 
         gl.uniform1f(program.simple.uniforms.Ka, 1.0);
