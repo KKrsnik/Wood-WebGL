@@ -219,7 +219,6 @@ export default class Renderer {
             parent = parent.parent;
         }
         mat4.invert(mvpMatrix, mvpMatrix);
-        //mat4.mul(mvpMatrix, camera.camera.matrix, mvpMatrix);
         return mvpMatrix;
     }
 
@@ -227,10 +226,6 @@ export default class Renderer {
 
         const gl = this.gl;
         gl.clearColor(0.1, 0.2, 0.5, 1.0);
-
-        //this.renderShadowMap(scene, light);
-
-        //this.renderWater(scene, camera, light);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -260,8 +255,6 @@ export default class Renderer {
         const textureMatrix = mat4.create();
         mat4.mul(textureMatrix, lightPerspectiveMatrix, lightWorldMatrix);
 
-
-        //mat4.invert(textureMatrix, textureMatrix);
         const lightDirection = vec3.create();
 
         vec3.sub(lightDirection, [0, 0, 0], light.translation);
@@ -276,7 +269,7 @@ export default class Renderer {
 
         gl.uniform3fv(program.simple.uniforms.lightPos, [0, 0, 0]);
         gl.uniform3fv(program.simple.uniforms.lightColor, [1.0, 0.3, 0.0]);
-        
+
 
         gl.uniform1f(program.simple.uniforms.Ka, 1.0);
         gl.uniform1f(program.simple.uniforms.Kd, 1.0);
@@ -292,13 +285,10 @@ export default class Renderer {
 
         let weapon;
         for (const node of scene.nodes) {
-            //if(node.options.name !== "Water"){
-                this.renderNode(node, vMatrix, pMatrix, 0, textureMatrix);
-            //}
+            this.renderNode(node, vMatrix, pMatrix, 0, textureMatrix);
             if (node.options.name === "Weapon") {
                 weapon = node;
             }
-            //this.renderNode(node, lightWorldMatrix, lightPerspectiveMatrix, 0, textureMatrix);
         }
         gl.clear(gl.DEPTH_BUFFER_BIT);
         this.renderNode(weapon, weaponWorld, weaponPerspective, 0, textureMatrix);
@@ -315,16 +305,10 @@ export default class Renderer {
             this.program;
             if (shaderProgram === 0) {
                 this.program = this.programs.simple;
-
-                //gl.uniformMatrix4fv(this.program.uniforms.uShadowTex, false, textureMatrix);
-
-
             } else if (shaderProgram === 1) {
                 this.program = this.programs.depth;
             } else if (shaderProgram === 2) {
                 this.program = this.programs.water;
-
-                //gl.uniformMatrix4fv(this.program.uniforms.uShadowTex, false, textureMatrix);
             }
             gl.uniformMatrix4fv(this.program.uniforms.uVMatrix, false, vMatrix);
             gl.uniformMatrix4fv(this.program.uniforms.uPMatrix, false, pMatrix);
@@ -333,7 +317,6 @@ export default class Renderer {
             mat4.invert(nMatrix, node.matrix);
             gl.uniformMatrix4fv(this.program.uniforms.uNMatrix, false, nMatrix);
             for (const primitive of node.mesh.primitives) {
-                //console.log(node.options.name);
                 this.renderPrimitive(primitive);
             }
         }
@@ -453,11 +436,10 @@ export default class Renderer {
 
 
         for (const node of scene.nodes) {
-            if (node.options.name === "Water"){
+            if (node.options.name === "Water") {
                 console.log("here");
                 this.renderNode(node, vMatrix, pMatrix, 2, textureMatrix);
             }
-            //this.renderNode(node, lightWorldMatrix, lightPerspectiveMatrix, 0, textureMatrix);
         }
     }
 

@@ -37,7 +37,6 @@ export default class Node {
                 this.scale[2] * 2
             ],
             rot: [k.roll, k.pitch, 0],
-            //rot: [0, 0, 0],
             move: false,
             density: 1,
             friction: 1,
@@ -45,8 +44,6 @@ export default class Node {
             belongsTo: 1,
             collidesWith: 0xffffffff,
         };
-
-        //console.log(this.body.rot);
 
         this.fizik;
 
@@ -58,11 +55,8 @@ export default class Node {
             if (options.name === "Camera") {
                 this.body.move = true;
                 this.body.type = 'sphere';
-                // this.body.pos[1] = 4;
-                // this.translation[1] = 4;
                 this.body.size = [1.5, 1.5, 1.5];
                 this.body.density = 0.1;
-                //this.body.collidesWith = 0xfffffff0;
                 this.updateTransform();
             } else if (options.name.split('.')[0] === "Enemy") {
                 this.body.type = 'sphere';

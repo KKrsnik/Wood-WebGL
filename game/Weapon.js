@@ -4,11 +4,10 @@ const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
 const quat = glMatrix.quat;
 
-export default class Weapon extends Node{
-    constructor(transformacija){
+export default class Weapon extends Node {
+    constructor(transformacija) {
         super({});
         this.transformacija = transformacija;
-
 
 
         this.attackSpeed = 3;
@@ -16,7 +15,7 @@ export default class Weapon extends Node{
     }
 
 
-    update(dt, camera, matrix){
+    update(dt, camera, matrix) {
         const c = this.transformacija;
 
         let mat = mat4.create();
@@ -24,22 +23,17 @@ export default class Weapon extends Node{
 
         let out = mat4.create();
 
-
         mat4.mul(c.matrix, camera.matrix, mat);
 
-        //matrix = out;
-
-        //console.log(c.matrix);
-
-        if(camera.camera.isAttacking()){
+        if (camera.camera.isAttacking()) {
             this.updateRotation(dt);
-        }else{
+        } else {
             this.rot = [0, 0, 0];
             c.rotationDeg = this.rot;
         }
     }
 
-    updateRotation(dt){
+    updateRotation(dt) {
         const c = this.transformacija;
 
         this.rot[0] -= dt * this.attackSpeed;

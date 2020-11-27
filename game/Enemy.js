@@ -108,7 +108,6 @@ export default class Enemy extends Node {
             }
         }
 
-        //this.updateRotation();
     }
 
     updateRotation(dt) {
@@ -126,19 +125,16 @@ export default class Enemy extends Node {
         let q = {x: kk[0], y: kk[1], z: kk[2], w: kk[3]};
         let angles = {roll: 0, pitch: 0, yaw: 0};
 
-        // roll (x-axis rotation)
         let sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
         let cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
         angles.roll = Math.atan2(sinr_cosp, cosr_cosp);
 
-        // pitch (y-axis rotation)
         let sinp = 2 * (q.w * q.y - q.z * q.x);
         if (Math.abs(sinp) >= 1)
             angles.pitch = Math.sign(sinp) * Math.PI / 2; // use 90 degrees if out of range
         else
             angles.pitch = Math.asin(sinp);
 
-        // yaw (z-axis rotation)
         let siny_cosp = 2 * (q.w * q.z + q.x * q.y);
         let cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
         angles.yaw = Math.atan2(siny_cosp, cosy_cosp);

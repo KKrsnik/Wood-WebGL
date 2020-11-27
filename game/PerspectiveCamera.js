@@ -41,7 +41,6 @@ export default class PerspectiveCamera extends Camera {
 
     setTransformation(tranformacija) {
         this.transformacija = tranformacija;
-        //this.transformacija.fizik.setQuaternion(this.transformacija.rotation);
     }
 
     updateMatrix() {
@@ -137,9 +136,6 @@ export default class PerspectiveCamera extends Camera {
             !this.keys['KeyA']) {
             this.velocity[0] = 0;
             this.velocity[2] = 0;
-            // vec3.scale(this.velocity, this.velocity, 0);
-            // vec3.add(this.velocity, this.velocity, down);
-            //c.fizik.resetPosition(pos.x, pos.y, pos.z);
         }
 
         // 4: limit speed

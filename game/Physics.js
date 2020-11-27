@@ -23,10 +23,8 @@ export default class Physics {
         this.lose = false;
         this.timeLeft = 45.0;
         this.timeSurvived = 0.0;
-        //this.slain = 0;
-        
+
         this.scene.traverse(node => {
-            //console.log(node);
             if (node.camera) {
                 node.fizik = this.world.add(node.body);
             }
@@ -115,9 +113,7 @@ export default class Physics {
                 let z = Math.abs(pos.z);
 
                 let dist = x + y + z;
-                //console.log(dist);
                 if (dist < 2) {
-                    //console.log("hehe");
                     node.fizik.resetPosition(-100, -200, -100);
                     this.enemyCount--;
                     this.timeLeft -= 2;
@@ -135,7 +131,6 @@ export default class Physics {
         }
         document.getElementById("time").innerHTML = Math.ceil(this.timeLeft);
         document.getElementById("survived").innerHTML = Math.floor(this.timeSurvived);
-        //document.getElementById("slain").innerHTML = this.slain;
 
         this.timeLeft -= dt;
         this.timeSurvived += dt;
