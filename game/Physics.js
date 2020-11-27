@@ -106,7 +106,7 @@ export default class Physics {
                 
                 let pos = node.fizik.getPosition();
                 node.translation[0] = pos.x;
-                node.translation[1] = pos.y;
+                node.translation[1] = pos.y - 1;
                 node.translation[2] = pos.z;
                 node.updateTransform();
 
@@ -129,7 +129,7 @@ export default class Physics {
             document.exitPointerLock();
             document.getElementById("score").innerHTML = Math.floor(this.timeSurvived);
             var m = new Audio('common/sounds/passed.mp3');
-            m.volume = 0.2;
+            m.volume = 0.1;
             m.play();
             this.win = true;
         }

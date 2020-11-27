@@ -36,9 +36,8 @@ export default class Enemy extends Node {
         this.forward = vec3.set(vec3.create(), -this.transformacija.translation[0], 0, -this.transformacija.translation[2]);
         this.originalPos = vec3.create();
         this.originalPos[0] = this.transformacija.translation[0];
-        this.originalPos[1] = this.transformacija.translation[1];
+        this.originalPos[1] = this.body.pos[1];
         this.originalPos[2] = this.transformacija.translation[2];
-        console.log(this.originalPos);
     }
 
 
