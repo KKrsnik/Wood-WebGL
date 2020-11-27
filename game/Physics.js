@@ -86,7 +86,9 @@ export default class Physics {
 
                             let dist = x + y + z;
                             if(dist < 5.0){
-                              enemy.fizik.resetPosition(0, -200, 0);
+                              enemy.fizik.resetPosition(-100, -200, -100);
+                              var audio = new Audio('common/sounds/death2.mp3');
+                              audio.play();
                               this.enemyCount--;
                               this.slain++;
                             }
