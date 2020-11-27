@@ -18,17 +18,17 @@ export default class Physics {
             gravity: [0, 0, 0]
         });
 
-        this.enemyCount = 0;
+        //this.enemyCount = 0;
         this.win = false;
         this.lose = false;
         this.timeLeft = 45.0;
-        this.slain = 0;
-
+        this.timeSurvived = 0.0;
+        //this.slain = 0;
+        
         this.scene.traverse(node => {
-            console.log(node);
+            //console.log(node);
             if (node.camera) {
                 node.fizik = this.world.add(node.body);
-                console.log(node);
             }
             if (node.options.name.split('.')[0] === "Floor" || node.options.name.split('.')[0] === "Bridge") {
                 node.fizik = this.world.add(node.body);
@@ -36,7 +36,7 @@ export default class Physics {
             if (node.options.name === "Water") {
                 node.fizik = this.world.add(node.body);
             }
-            if (node.options.name === "Enemy") {
+            if (node.options.name.split('.')[0] === "Enemy") {
                 node.fizik = this.world.add(node.body);
                 node.enemy = new Enemy(node);
                 this.enemyCount++;
@@ -62,8 +62,9 @@ export default class Physics {
                 node.translation[1] = pos.y;
                 node.translation[2] = pos.z;
                 node.updateTransform();
-                if (pos.y < -3) {
+                if (pos.y < -2) {
                     node.fizik.resetPosition(0, 0, 0);
+                    this.timeLeft -= 5;
                 }
 
                 this.scene.traverse(w => {
@@ -89,6 +90,8 @@ export default class Physics {
                                 audio.play();
                                 this.enemyCount--;
                                 this.slain++;
+                                enemy.enemy.isDead();
+                                this.timeLeft += 2;
                             }
                         }
 
@@ -97,7 +100,10 @@ export default class Physics {
             }
             if (node.enemy) {
                 node.enemy.update(dt);
-                node.fizik.applyImpulse({x: 0, y: 0, z: 0}, node.enemy.getVelocity());
+                //node.fizik.applyImpulse({x: 0, y: 0, z: 0}, node.enemy.getVelocity());
+                let v = node.enemy.getVelocity();
+                node.fizik.linearVelocity.set(v.x, v.y, v.z);
+                
                 let pos = node.fizik.getPosition();
                 node.translation[0] = pos.x;
                 node.translation[1] = pos.y;
@@ -108,47 +114,31 @@ export default class Physics {
                 let y = Math.abs(pos.y);
                 let z = Math.abs(pos.z);
 
-                let dist = x + z;
+                let dist = x + y + z;
                 //console.log(dist);
-                if (dist < 5) {
+                if (dist < 2) {
                     //console.log("hehe");
-                    node.fizik.resetPosition(0, -200, 0);
+                    node.fizik.resetPosition(-100, -200, -100);
                     this.enemyCount--;
                     this.timeLeft -= 2;
                 }
             }
         });
-        if (this.enemyCount === 0 && this.slain > 0 && !this.win) {
+        if (this.timeLeft < 0 && !this.win) {
             document.getElementById("win").style.visibility = "visible";
             document.exitPointerLock();
+            document.getElementById("score").innerHTML = Math.floor(this.timeSurvived);
             var m = new Audio('common/sounds/passed.mp3');
             m.volume = 0.2;
             m.play();
             this.win = true;
         }
-        if (this.enemyCount === 0 && this.slain === 0 && !this.win && !this.lose) {
-            //console.log("enemy 0 slain 0");
-            document.getElementById("lose").style.visibility = "visible";
-            document.exitPointerLock();
-            var m = new Audio('common/sounds/failed.mp3');
-            m.volume = 0.2;
-            m.play();
-            this.lose = true;
-        }
-        if (this.timeLeft < 0 && !this.win && !this.lose) {
-            //console.log("time");
-            document.getElementById("lose").style.visibility = "visible";
-            document.exitPointerLock();
-            var m = new Audio('common/sounds/failed.mp3');
-            m.volume = 0.2;
-            m.play();
-            this.lose = true;
-        }
         document.getElementById("time").innerHTML = Math.ceil(this.timeLeft);
-        document.getElementById("left").innerHTML = this.enemyCount;
-        document.getElementById("slain").innerHTML = this.slain;
+        document.getElementById("survived").innerHTML = Math.floor(this.timeSurvived);
+        //document.getElementById("slain").innerHTML = this.slain;
 
         this.timeLeft -= dt;
+        this.timeSurvived += dt;
     }
 
     intervalIntersection(min1, max1, min2, max2) {

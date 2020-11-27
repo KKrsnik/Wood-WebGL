@@ -17,7 +17,7 @@ export default class PerspectiveCamera extends Camera {
         this.far = 1000;
         this.velocity = vec3.fromValues(0, 0, 0);
         this.mouseSensitivity = 0.002;
-        this.maxSpeed = 50;
+        this.maxSpeed = 12;
         this.friction = 0.2;
         this.acceleration = 100;
 
@@ -119,7 +119,7 @@ export default class PerspectiveCamera extends Camera {
         }
 
         if (this.jumpTime > 0) {
-            console.log(this.jumpTime)
+            //console.log(this.jumpTime)
             this.jumpTime -= dt;
         } else {
             if (this.jumpTime < 0) {

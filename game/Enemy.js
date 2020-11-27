@@ -8,7 +8,7 @@ export default class Enemy extends Node {
     constructor(transformacija) {
         super({});
         this.velocity = vec3.fromValues(0, 0, 0);
-        this.maxSpeed = 10;
+        this.maxSpeed = 3;
         this.friction = 0.2;
         this.acceleration = 100;
 
@@ -17,6 +17,10 @@ export default class Enemy extends Node {
 
         this.timeToMove = 1.0;
         this.timeBetweenMove = Math.random() * 5;
+        
+        
+        this.dead = false;
+        this.deadTime = 1.0;
 
         this.move = false;
         this.wait = true;
@@ -30,17 +34,26 @@ export default class Enemy extends Node {
         this.dir[1] = -k.roll;
 
         this.forward = vec3.set(vec3.create(), -this.transformacija.translation[0], 0, -this.transformacija.translation[2]);
-
+        this.originalPos = vec3.create();
+        this.originalPos[0] = this.transformacija.translation[0];
+        this.originalPos[1] = this.transformacija.translation[1];
+        this.originalPos[2] = this.transformacija.translation[2];
+        console.log(this.originalPos);
     }
 
 
     setTransformation(transformacija) {
 
     }
+    
+    isDead(){
+        this.dead = true;
+        this.deadTime = Math.random() * 5 + 3;
+    }
 
     getVelocity() {
         let a = this.velocity[0];
-        let b = this.velocity[1];
+        let b = 0;
         let c = this.velocity[2];
 
         let v = {
@@ -54,35 +67,46 @@ export default class Enemy extends Node {
 
     update(dt) {
         const c = this.transformacija;
-        if (this.timeToMove > 0.0) {
-            this.timeToMove -= dt;
-        } else if (this.timeToMove < 0.0 && !this.wait) {
-            vec3.scale(this.velocity, this.velocity, 0);
-            let pos = c.fizik.getPosition();
-            c.fizik.resetPosition(pos.x, pos.y, pos.z);
-            this.timeBetweenMove = 1.0;
-            this.move = false;
-            this.wait = true;
-        }
 
-        if (this.timeBetweenMove > 0.0) {
-            this.timeBetweenMove -= dt;
-            this.updateRotation(dt);
-        } else if (this.timeBetweenMove < 0.0 && !this.move) {
-
-
-            let acc = vec3.create();
-            vec3.add(acc, acc, this.forward);
-
-            vec3.scaleAndAdd(this.velocity, this.velocity, acc, dt * this.acceleration);
-
-            const len = vec3.len(this.velocity);
-            if (len > this.maxSpeed) {
-                vec3.scale(this.velocity, this.velocity, this.maxSpeed / len);
+        if(!this.dead){
+            if (this.timeToMove > 0.0) {
+                this.timeToMove -= dt;
+            } else if (this.timeToMove < 0.0 && !this.wait) {
+                vec3.scale(this.velocity, this.velocity, 0);
+                let pos = c.fizik.getPosition();
+                c.fizik.resetPosition(pos.x, pos.y, pos.z);
+                this.timeBetweenMove = 1.0;
+                this.move = false;
+                this.wait = true;
             }
-            this.timeToMove = 1.0;
-            this.wait = false;
-            this.move = true;
+
+            if (this.timeBetweenMove > 0.0) {
+                this.timeBetweenMove -= dt;
+                this.updateRotation(dt);
+            } else if (this.timeBetweenMove < 0.0 && !this.move) {
+
+
+                let acc = vec3.create();
+                vec3.add(acc, acc, this.forward);
+
+                vec3.scaleAndAdd(this.velocity, this.velocity, acc, dt * this.acceleration);
+
+                const len = vec3.len(this.velocity);
+                if (len > this.maxSpeed) {
+                    vec3.scale(this.velocity, this.velocity, this.maxSpeed / len);
+                }
+                this.timeToMove = 1.0;
+                this.wait = false;
+                this.move = true;
+            }
+        }else{
+            if(this.deadTime < 0){
+
+                c.fizik.resetPosition(this.originalPos[0], this.originalPos[1], this.originalPos[2]);
+                this.dead = false;
+            }else{
+                this.deadTime -= dt;
+            }
         }
 
         //this.updateRotation();

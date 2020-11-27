@@ -230,7 +230,7 @@ export default class Renderer {
 
         //this.renderShadowMap(scene, light);
 
-        // this.renderWater(scene, camera, light);
+        //this.renderWater(scene, camera, light);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -272,19 +272,18 @@ export default class Renderer {
 
 
         gl.uniform3fv(program.simple.uniforms.uDirLight, light.translation);
-        gl.uniform3fv(program.simple.uniforms.uDirColor, [0.0, 0.4, 1.0]);
+        gl.uniform3fv(program.simple.uniforms.uDirColor, [0.5, 0.5, 1.0]);
 
-
-        gl.uniform3fv(program.simple.uniforms.lightPos, [0, 75, 0]);
+        gl.uniform3fv(program.simple.uniforms.lightPos, [0, 0, 0]);
         gl.uniform3fv(program.simple.uniforms.lightColor, [1.0, 0.3, 0.0]);
+        
 
         gl.uniform1f(program.simple.uniforms.Ka, 1.0);
         gl.uniform1f(program.simple.uniforms.Kd, 1.0);
         gl.uniform1f(program.simple.uniforms.Ks, 1.0);
-        gl.uniform1f(program.simple.uniforms.shininessVal, 2.0);
 
         const weaponWorld = mat4.create();
-        mat4.lookAt(weaponWorld, [-4, -100, 5], [-4, -100, -5], [0, 1, 0]);
+        mat4.lookAt(weaponWorld, [-1, -100, 2], [-1, -100, -2], [0, 1, 0]);
 
         const weaponPerspective = mat4.create();
         mat4.perspective(weaponPerspective,
@@ -293,15 +292,16 @@ export default class Renderer {
 
         let weapon;
         for (const node of scene.nodes) {
-            this.renderNode(node, vMatrix, pMatrix, 0, textureMatrix);
-
+            //if(node.options.name !== "Water"){
+                this.renderNode(node, vMatrix, pMatrix, 0, textureMatrix);
+            //}
             if (node.options.name === "Weapon") {
                 weapon = node;
             }
             //this.renderNode(node, lightWorldMatrix, lightPerspectiveMatrix, 0, textureMatrix);
         }
         gl.clear(gl.DEPTH_BUFFER_BIT);
-        // this.renderNode(weapon, weaponWorld, weaponPerspective, 0, textureMatrix);
+        this.renderNode(weapon, weaponWorld, weaponPerspective, 0, textureMatrix);
     }
 
     renderNode(node, vMatrix, pMatrix, shaderProgram, textureMatrix) {
@@ -436,7 +436,7 @@ export default class Renderer {
         gl.uniform3fv(program.water.uniforms.uDirColor, [0.0, 0.4, 1.0]);
 
 
-        gl.uniform3fv(program.water.uniforms.lightPos, [40, 3, -30]);
+        gl.uniform3fv(program.water.uniforms.lightPos, [0, 75, 0]);
         gl.uniform3fv(program.water.uniforms.lightColor, [1.0, 0.3, 0.0]);
 
         let d = new Date();
@@ -453,9 +453,10 @@ export default class Renderer {
 
 
         for (const node of scene.nodes) {
-            if (node.options.name === "Water")
+            if (node.options.name === "Water"){
+                console.log("here");
                 this.renderNode(node, vMatrix, pMatrix, 2, textureMatrix);
-
+            }
             //this.renderNode(node, lightWorldMatrix, lightPerspectiveMatrix, 0, textureMatrix);
         }
     }

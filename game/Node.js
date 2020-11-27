@@ -36,7 +36,7 @@ export default class Node {
                 this.scale[1] * 2,
                 this.scale[2] * 2
             ],
-            rot: [k.roll, k.pitch, k.yaw],
+            rot: [k.roll, k.pitch, 0],
             //rot: [0, 0, 0],
             move: false,
             density: 1,
@@ -46,7 +46,7 @@ export default class Node {
             collidesWith: 0xffffffff,
         };
 
-        console.log(this.body.rot);
+        //console.log(this.body.rot);
 
         this.fizik;
 
@@ -64,11 +64,12 @@ export default class Node {
                 this.body.density = 0.1;
                 //this.body.collidesWith = 0xfffffff0;
                 this.updateTransform();
-            } else if (options.name === "Enemy") {
+            } else if (options.name.split('.')[0] === "Enemy") {
                 this.body.type = 'sphere';
                 this.body.move = true;
-                this.body.size = [1, 1, 1];
-                this.body.density = 5;
+                this.body.size = [0.2, 0.5, 0.2];
+                this.body.pos[1] = -0.5;
+                this.body.density = 0.1;
                 this.updateTransform();
             } else {
                 this.updateMatrix();

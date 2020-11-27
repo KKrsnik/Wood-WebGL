@@ -20,7 +20,7 @@ class App extends Application {
         document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
 
         this.loader = new GLTFLoader();
-        await this.loader.load('./common/models/The Islands/islands.gltf');
+        await this.loader.load('./common/models/The Islands - Copy/islands.gltf');
 
         // this.initOimoPhysics();
         this.scene = await this.loader.loadScene(this.loader.defaultScene);

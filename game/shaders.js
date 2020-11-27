@@ -34,7 +34,7 @@ void main() {
     gl_Position = uPMatrix * uVMatrix * worldPos;
 
 
-    vNormal = aNormal;
+    vNormal = aNormal * uNMatrix;
 }
 `;
 
@@ -90,12 +90,12 @@ void main() {
       vec3 V = normalize(-vVertexPos); // Vector to viewer
       // Compute the specular term
       float specAngle = max(dot(R, V), 0.0);
-      specular = pow(specAngle, 100.0);
+      specular = pow(specAngle, 2.0);
     }
 
 
 
-    vec3 color = ambient + lambertian * lightColor  + specular * lightColor;
+    vec3 color = ambient + lambertian * lightColor  + (specular * lightColor);
     vec3 tex = texture(uTexture, vTexCoord).xyz;
     oColor = vec4((color * tex +  (lambertian2 * uDirColor) * tex), 1.0);
 }
@@ -174,7 +174,71 @@ void main() {
     gl_Position = uPMatrix * uVMatrix * worldPos;
 
 
-    vNormal = vec4(rand(aNormal.xy), rand(aNormal.xz), rand(aNormal.yz), 1.0);
+    //vNormal = vec4(rand(aNormal.xy), rand(aNormal.xz), rand(aNormal.yz), 1.0);
+    vNormal = aNormal;
+}
+`;
+
+const waterf = `#version 300 es
+precision mediump float;
+
+uniform mediump sampler2D uTexture;
+uniform mediump sampler2D uDepth;
+
+
+uniform vec3 lightColor;
+uniform vec3 uDirLight;
+uniform vec3 uDirColor;
+
+
+in vec2 vTexCoord;
+in vec4 vNormal;
+in vec3 vVertexPos;
+in vec3 vLightPos;
+
+in vec4 vProjectedTexCoord;
+
+
+out vec4 oColor;
+
+
+void main() {
+
+    vec3 projCoords = vProjectedTexCoord.xyz / vProjectedTexCoord.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(uDepth, projCoords.xy).r;
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+
+
+    vec3 N = normalize(vNormal).xyz;
+    vec3 L = normalize(vLightPos - vVertexPos);
+    vec3 D = normalize(uDirLight);
+
+    vec3 ambient = vec3(0.1, 0.1, 0.1);
+
+    float lambertian = max(dot(L, N), 0.0);
+    float lambertian2 = max(dot(D, N), 0.0);
+
+    float specular = 0.0;
+
+    if(lambertian > 0.0) {
+      vec3 R = reflect(-L, N);      // Reflected light vector
+      vec3 V = normalize(-vVertexPos); // Vector to viewer
+      // Compute the specular term
+      float specAngle = max(dot(R, V), 0.0);
+      specular = pow(specAngle, 100.0);
+    }
+
+
+
+    vec3 color = ambient + lambertian * lightColor  + specular * lightColor;
+    vec3 tex = texture(uTexture, vTexCoord).xyz;
+    oColor = vec4((color * tex +  (lambertian2 * uDirColor) * tex), 1.0);
 }
 `;
 
@@ -182,5 +246,5 @@ void main() {
 export default {
     simple: { vertex: vertex, fragment: fragment },
     depth: { vertex: depthv, fragment: depthf },
-    water: {vertex: waterv, fragment: fragment}
+    water: {vertex: waterv, fragment: waterf}
 };
