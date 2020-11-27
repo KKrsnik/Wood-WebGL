@@ -78,7 +78,7 @@ void main() {
     vec3 L = normalize(vLightPos - vVertexPos);
     vec3 D = normalize(uDirLight);
 
-    vec3 ambient = vec3(0.5, 0.5, 0.5);
+    vec3 ambient = vec3(0.1, 0.1, 0.1);
 
     float lambertian = max(dot(L, N), 0.0);
     float lambertian2 = max(dot(D, N), 0.0);
@@ -90,7 +90,7 @@ void main() {
       vec3 V = normalize(-vVertexPos); // Vector to viewer
       // Compute the specular term
       float specAngle = max(dot(R, V), 0.0);
-      specular = pow(specAngle, 4.0);
+      specular = pow(specAngle, 100.0);
     }
 
 
