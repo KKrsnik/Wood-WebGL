@@ -115,6 +115,7 @@ export default class Physics {
                 let dist = x + y + z;
                 if (dist < 2) {
                     node.fizik.resetPosition(-100, -200, -100);
+                    node.enemy.isDead();
                     this.enemyCount--;
                     this.timeLeft -= 2;
                 }

@@ -12,7 +12,6 @@ export default class Renderer {
 
     constructor(gl) {
         this.gl = gl;
-        var ext = gl.getExtension('WEBGL_depth_texture');
         this.glObjects = new Map();
         this.programs = WebGL.buildPrograms(gl, shaders);
 
@@ -29,7 +28,7 @@ export default class Renderer {
     createShadowMapBuffer() {
         const gl = this.gl;
 
-        const shadowMap = WebGL.createTexture(gl, {
+        this.shadowMap = WebGL.createTexture(gl, {
             width: 512,
             height: 512,
             iformat: gl.DEPTH_COMPONENT24,
@@ -38,12 +37,22 @@ export default class Renderer {
             mag: gl.NEAREST,
             type: gl.UNSIGNED_INT,
         });
+        
+        this.unusedTexture = WebGL.createTexture(gl, {
+            width: 512,
+            height: 512,
+            iformat: gl.RGBA,
+            format: gl.RGBA,
+            min: gl.NEAREST,
+            mag: gl.NEAREST,
+            type: gl.UNSIGNED_BYTE,
+        });
 
         const shadowBuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, shadowBuffer);
 
         // Attach the texture to the framebuffer.
-
+        
         gl.framebufferTexture2D(
             // This has to be gl.FRAMEBUFFER for historical reasons.
             gl.FRAMEBUFFER,
@@ -59,12 +68,21 @@ export default class Renderer {
             gl.TEXTURE_2D,
 
             // Our texture object.
-            shadowMap,
+            this.shadowMap,
 
             // The mipmap level of the texture.
             0
         );
-    }
+        
+
+        
+        gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,        // target
+            gl.COLOR_ATTACHMENT0,  // attachment point
+            gl.TEXTURE_2D,         // texture target
+            this.unusedTexture,         // texture
+            0);                    // mip level
+        }
 
 
     prepareBufferView(bufferView) {
@@ -222,10 +240,12 @@ export default class Renderer {
         return mvpMatrix;
     }
 
-    render(scene, camera, light, dt) {
+    render(scene, camera, dt) {
 
         const gl = this.gl;
         gl.clearColor(0.1, 0.2, 0.5, 1.0);
+        
+        this.renderShadowMap(scene);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -242,10 +262,12 @@ export default class Renderer {
         const pMatrix = camera.camera.matrix;
 
         const lightWorldMatrix = mat4.create();
-        mat4.lookAt(lightWorldMatrix, light.translation, [0, 0, 0], [0, 1, 0]);
+        mat4.lookAt(lightWorldMatrix, [80, 25, 80], [0, 0, 0], [0, 1, 0]);
 
         const lightPerspectiveMatrix = mat4.create();
-        mat4.ortho(lightPerspectiveMatrix, -100, 100, -100, 100, -1, 200);
+        mat4.perspective(lightPerspectiveMatrix,
+            1, 1.5,
+            0.1, 100);
 
         const i = mat4.create();
         const j = mat4.create();
@@ -257,23 +279,24 @@ export default class Renderer {
 
         const lightDirection = vec3.create();
 
-        vec3.sub(lightDirection, [0, 0, 0], light.translation);
+        vec3.sub(lightDirection, [0, 0, 0], [80, 15, 80]);
 
 
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, this.shadowMap);
+        
+        mat4.transpose(i, i);
+        mat4.transpose(j, j);
 
 
-        gl.uniform3fv(program.simple.uniforms.uDirLight, light.translation);
+        gl.uniform3fv(program.simple.uniforms.uDirLight, lightDirection);
         gl.uniform3fv(program.simple.uniforms.uDirColor, [0.5, 0.5, 1.0]);
 
-        gl.uniform3fv(program.simple.uniforms.lightPos, [0, 0, 0]);
+        gl.uniform3fv(program.simple.uniforms.lightPos, [0, 1, 0]);
         gl.uniform3fv(program.simple.uniforms.lightColor, [1.0, 0.3, 0.0]);
-
-
-        gl.uniform1f(program.simple.uniforms.Ka, 1.0);
-        gl.uniform1f(program.simple.uniforms.Kd, 1.0);
-        gl.uniform1f(program.simple.uniforms.Ks, 1.0);
+        
+        gl.uniformMatrix4fv(program.simple.uniforms.lightProj, false, lightPerspectiveMatrix);
+        gl.uniformMatrix4fv(program.simple.uniforms.lightView, false, lightWorldMatrix);
 
         const weaponWorld = mat4.create();
         mat4.lookAt(weaponWorld, [-1, -100, 2], [-1, -100, -2], [0, 1, 0]);
@@ -289,12 +312,13 @@ export default class Renderer {
             if (node.options.name === "Weapon") {
                 weapon = node;
             }
+            //this.renderNode(node, lightWorldMatrix, lightPerspectiveMatrix, 0, textureMatrix);
         }
         gl.clear(gl.DEPTH_BUFFER_BIT);
-        this.renderNode(weapon, weaponWorld, weaponPerspective, 0, textureMatrix);
+        this.renderNode(weapon, weaponWorld, weaponPerspective, 0);
     }
 
-    renderNode(node, vMatrix, pMatrix, shaderProgram, textureMatrix) {
+    renderNode(node, vMatrix, pMatrix, shaderProgram) {
         const gl = this.gl;
 
         vMatrix = mat4.clone(vMatrix);
@@ -313,16 +337,33 @@ export default class Renderer {
             gl.uniformMatrix4fv(this.program.uniforms.uVMatrix, false, vMatrix);
             gl.uniformMatrix4fv(this.program.uniforms.uPMatrix, false, pMatrix);
             gl.uniformMatrix4fv(this.program.uniforms.uMMatrix, false, node.matrix);
+            
             const nMatrix = mat4.create();
             mat4.invert(nMatrix, node.matrix);
+            mat4.transpose(nMatrix, nMatrix);
+            
             gl.uniformMatrix4fv(this.program.uniforms.uNMatrix, false, nMatrix);
+            
+
+            let flicker = Math.random() * 5 + 3;
+            if(node.options.name.split('.')[0] === "Floor"){
+                gl.uniform1f(this.program.uniforms.shinnines, 2.0);
+            }else if(node.options.name.split('.')[0] === "Enemy"){
+                gl.uniform1f(this.program.uniforms.shinnines, 3.0);
+            }else if(node.options.name.split('.')[0] === "Water"){
+                gl.uniform1f(this.program.uniforms.shinnines, 0.3);
+            }else if(node.options.name.split('.')[0] === "Bridge"){
+                gl.uniform1f(this.program.uniforms.shinnines, 1.0);
+            }
+
+            gl.uniform1f(this.program.uniforms.flicker, flicker);
             for (const primitive of node.mesh.primitives) {
                 this.renderPrimitive(primitive);
             }
         }
 
         for (const child of node.children) {
-            this.renderNode(child, vMatrix, pMatrix, shaderProgram, textureMatrix);
+            this.renderNode(child, vMatrix, pMatrix, shaderProgram);
         }
     }
 
@@ -352,18 +393,23 @@ export default class Renderer {
         }
     }
 
-    renderShadowMap(scene, light) {
+    renderShadowMap(scene) {
         const gl = this.gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowBuffer);
         gl.viewport(0, 0, 512, 512);
+        
+        gl.enable(gl.DEPTH_TEST);
 
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
+
         const lightWorldMatrix = mat4.create();
-        mat4.lookAt(lightWorldMatrix, light.translation, [0, 0, 0], [0, 1, 0]);
+        mat4.lookAt(lightWorldMatrix, [80, 25, 80], [0, 0, 0], [0, 1, 0]);
 
         const lightPerspectiveMatrix = mat4.create();
-        mat4.ortho(lightPerspectiveMatrix, -100, 100, -100, 100, -1, 200);
+        mat4.perspective(lightPerspectiveMatrix,
+            1, 1.5,
+            0.1, 100);
 
         const program = this.programs;
         gl.useProgram(program.depth.program);

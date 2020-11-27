@@ -36,12 +36,6 @@ class App extends Application {
         this.renderer.prepareScene(this.scene);
         this.resize();
 
-        this.scene.traverse(node => {
-            if (node.options.name === "Light") {
-                this.light = node;
-            }
-        });
-
         this.canvas.requestPointerLock();
 
 
@@ -81,7 +75,7 @@ class App extends Application {
         const t = this.time = Date.now();
         const dt = (this.time - this.startTime) * 0.001;
         if (this.renderer) {
-            this.renderer.render(this.scene, this.camera, this.light, dt);
+            this.renderer.render(this.scene, this.camera, dt);
         }
     }
 
