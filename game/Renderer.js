@@ -12,7 +12,7 @@ export default class Renderer {
 
     constructor(gl) {
         this.gl = gl;
-            var ext = gl.getExtension('WEBGL_depth_texture');
+        var ext = gl.getExtension('WEBGL_depth_texture');
         this.glObjects = new Map();
         this.programs = WebGL.buildPrograms(gl, shaders);
 
@@ -26,45 +26,44 @@ export default class Renderer {
     }
 
 
-    createShadowMapBuffer(){
-      const gl = this.gl;
+    createShadowMapBuffer() {
+        const gl = this.gl;
 
-      const shadowMap = WebGL.createTexture(gl, {
-          width : 512,
-          height: 512,
-          iformat: gl.DEPTH_COMPONENT24,
-          format: gl.DEPTH_COMPONENT,
-          min : gl.NEAREST,
-          mag : gl.NEAREST,
-          type: gl.UNSIGNED_INT,
-      });
+        const shadowMap = WebGL.createTexture(gl, {
+            width: 512,
+            height: 512,
+            iformat: gl.DEPTH_COMPONENT24,
+            format: gl.DEPTH_COMPONENT,
+            min: gl.NEAREST,
+            mag: gl.NEAREST,
+            type: gl.UNSIGNED_INT,
+        });
 
-      const shadowBuffer = gl.createFramebuffer();
-      gl.bindFramebuffer(gl.FRAMEBUFFER, shadowBuffer);
+        const shadowBuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, shadowBuffer);
 
-      // Attach the texture to the framebuffer.
+        // Attach the texture to the framebuffer.
 
-      gl.framebufferTexture2D(
+        gl.framebufferTexture2D(
+            // This has to be gl.FRAMEBUFFER for historical reasons.
+            gl.FRAMEBUFFER,
 
-          // This has to be gl.FRAMEBUFFER for historical reasons.
-          gl.FRAMEBUFFER,
+            // Attach the texture to the 0-th color attachment of the framebuffer.
+            // There is also gl.DEPTH_ATTACHMENT if you need a depth buffer.
+            // You can have multiple color attachments (at least 4), which you
+            // can write into by specifying multiple fragment shader outputs.
+            gl.DEPTH_ATTACHMENT,
 
-          // Attach the texture to the 0-th color attachment of the framebuffer.
-          // There is also gl.DEPTH_ATTACHMENT if you need a depth buffer.
-          // You can have multiple color attachments (at least 4), which you
-          // can write into by specifying multiple fragment shader outputs.
-          gl.DEPTH_ATTACHMENT,
+            // We have to specify the texture target. This is useful for
+            // rendering into different faces of a cubemap texture.
+            gl.TEXTURE_2D,
 
-          // We have to specify the texture target. This is useful for
-          // rendering into different faces of a cubemap texture.
-          gl.TEXTURE_2D,
+            // Our texture object.
+            shadowMap,
 
-          // Our texture object.
-          shadowMap,
-
-          // The mipmap level of the texture.
-          0
-      );
+            // The mipmap level of the texture.
+            0
+        );
     }
 
 
@@ -231,7 +230,7 @@ export default class Renderer {
 
         //this.renderShadowMap(scene, light);
 
-        //this.renderWater(scene, camera, light);
+        // this.renderWater(scene, camera, light);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -265,8 +264,7 @@ export default class Renderer {
         //mat4.invert(textureMatrix, textureMatrix);
         const lightDirection = vec3.create();
 
-        vec3.sub(lightDirection, [0,0,0], light.translation);
-
+        vec3.sub(lightDirection, [0, 0, 0], light.translation);
 
 
         gl.activeTexture(gl.TEXTURE1);
@@ -295,16 +293,15 @@ export default class Renderer {
 
         let weapon;
         for (const node of scene.nodes) {
-            if(node.options.name !== "Water"){
-                this.renderNode(node, vMatrix, pMatrix, 0, textureMatrix);
-            }
-            if(node.options.name === "Weapon"){
+            this.renderNode(node, vMatrix, pMatrix, 0, textureMatrix);
+
+            if (node.options.name === "Weapon") {
                 weapon = node;
             }
             //this.renderNode(node, lightWorldMatrix, lightPerspectiveMatrix, 0, textureMatrix);
         }
         gl.clear(gl.DEPTH_BUFFER_BIT);
-        this.renderNode(weapon, weaponWorld, weaponPerspective, 0, textureMatrix);
+        // this.renderNode(weapon, weaponWorld, weaponPerspective, 0, textureMatrix);
     }
 
     renderNode(node, vMatrix, pMatrix, shaderProgram, textureMatrix) {
@@ -314,18 +311,17 @@ export default class Renderer {
         pMatrix = mat4.clone(pMatrix);
 
 
-
         if (node.mesh) {
             this.program;
-            if(shaderProgram === 0){
+            if (shaderProgram === 0) {
                 this.program = this.programs.simple;
 
                 //gl.uniformMatrix4fv(this.program.uniforms.uShadowTex, false, textureMatrix);
 
 
-            }else if(shaderProgram === 1){
+            } else if (shaderProgram === 1) {
                 this.program = this.programs.depth;
-            }else if(shaderProgram === 2){
+            } else if (shaderProgram === 2) {
                 this.program = this.programs.water;
 
                 //gl.uniformMatrix4fv(this.program.uniforms.uShadowTex, false, textureMatrix);
@@ -373,7 +369,7 @@ export default class Renderer {
         }
     }
 
-    renderShadowMap(scene, light){
+    renderShadowMap(scene, light) {
         const gl = this.gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowBuffer);
         gl.viewport(0, 0, 512, 512);
@@ -395,7 +391,7 @@ export default class Renderer {
 
     }
 
-    renderWater(scene, camera, light){
+    renderWater(scene, camera, light) {
         const gl = this.gl;
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -429,8 +425,7 @@ export default class Renderer {
 
         const lightDirection = vec3.create();
 
-        vec3.sub(lightDirection, [0,0,0], light.translation);
-
+        vec3.sub(lightDirection, [0, 0, 0], light.translation);
 
 
         gl.activeTexture(gl.TEXTURE1);
@@ -458,7 +453,7 @@ export default class Renderer {
 
 
         for (const node of scene.nodes) {
-            if(node.options.name === "Water")
+            if (node.options.name === "Water")
                 this.renderNode(node, vMatrix, pMatrix, 2, textureMatrix);
 
             //this.renderNode(node, lightWorldMatrix, lightPerspectiveMatrix, 0, textureMatrix);

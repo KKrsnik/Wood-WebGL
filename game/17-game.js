@@ -20,7 +20,7 @@ class App extends Application {
         document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
 
         this.loader = new GLTFLoader();
-        await this.loader.load('./common/models/enemytest/test.gltf');
+        await this.loader.load('./common/models/The Islands/islands.gltf');
 
         // this.initOimoPhysics();
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
@@ -40,8 +40,8 @@ class App extends Application {
         this.resize();
 
         this.scene.traverse(node => {
-            if(node.options.name === "Light"){
-              this.light = node;
+            if (node.options.name === "Light") {
+                this.light = node;
             }
         });
 

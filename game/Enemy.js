@@ -4,11 +4,11 @@ const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
 const quat = glMatrix.quat;
 
-export default class Enemy extends Node{
-    constructor(transformacija){
+export default class Enemy extends Node {
+    constructor(transformacija) {
         super({});
         this.velocity = vec3.fromValues(0, 0, 0);
-        this.maxSpeed = 1;
+        this.maxSpeed = 10;
         this.friction = 0.2;
         this.acceleration = 100;
 
@@ -34,30 +34,29 @@ export default class Enemy extends Node{
     }
 
 
-    setTransformation(transformacija){
+    setTransformation(transformacija) {
 
     }
 
-    getVelocity(){
+    getVelocity() {
         let a = this.velocity[0];
         let b = this.velocity[1];
         let c = this.velocity[2];
 
         let v = {
-          x: a,
-          y: b,
-          z: c
+            x: a,
+            y: b,
+            z: c
         }
 
         return v;
     }
 
-    update(dt){
+    update(dt) {
         const c = this.transformacija;
-        if(this.timeToMove > 0.0){
+        if (this.timeToMove > 0.0) {
             this.timeToMove -= dt;
-        }
-        else if(this.timeToMove < 0.0 && !this.wait){
+        } else if (this.timeToMove < 0.0 && !this.wait) {
             vec3.scale(this.velocity, this.velocity, 0);
             let pos = c.fizik.getPosition();
             c.fizik.resetPosition(pos.x, pos.y, pos.z);
@@ -66,10 +65,10 @@ export default class Enemy extends Node{
             this.wait = true;
         }
 
-        if(this.timeBetweenMove > 0.0){
+        if (this.timeBetweenMove > 0.0) {
             this.timeBetweenMove -= dt;
             this.updateRotation(dt);
-        }else if(this.timeBetweenMove < 0.0 && !this.move){
+        } else if (this.timeBetweenMove < 0.0 && !this.move) {
 
 
             let acc = vec3.create();
@@ -89,7 +88,7 @@ export default class Enemy extends Node{
         //this.updateRotation();
     }
 
-    updateRotation(dt){
+    updateRotation(dt) {
         const c = this.transformacija;
         const pi = Math.PI;
         const twopi = pi * 2;

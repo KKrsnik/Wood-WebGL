@@ -17,11 +17,12 @@ export default class PerspectiveCamera extends Camera {
         this.far = 1000;
         this.velocity = vec3.fromValues(0, 0, 0);
         this.mouseSensitivity = 0.002;
-        this.maxSpeed = 100;
+        this.maxSpeed = 50;
         this.friction = 0.2;
         this.acceleration = 100;
 
         this.jump = false;
+        this.jumpTime = -1;
 
         this.attackTime = 0.5;
         this.attack = false;
@@ -49,7 +50,7 @@ export default class PerspectiveCamera extends Camera {
             this.near, this.far);
     }
 
-    getVelocity(){
+    getVelocity() {
 
 
         let a = this.velocity[0];
@@ -57,25 +58,24 @@ export default class PerspectiveCamera extends Camera {
         let c = this.velocity[2];
 
         let v = {
-          x: a,
-          y: b,
-          z: c
+            x: a,
+            y: b,
+            z: c
         }
 
         return v;
     }
 
-    getRotation(){
+    getRotation() {
         return this.rotationDeg;
     }
 
 
-
     update(dt) {
-        if(this.attackTime > 0 && this.attack ){
+        if (this.attackTime > 0 && this.attack) {
             this.attackTime -= dt;
         }
-        if(this.attackTime < 0.0){
+        if (this.attackTime < 0.0) {
             this.attack = false;
             this.attackTime = 0.5;
         }
@@ -86,12 +86,13 @@ export default class PerspectiveCamera extends Camera {
         const right = vec3.set(vec3.create(),
             Math.cos(this.rot[1]), 0, -Math.sin(this.rot[1]));
 
-        const up = vec3.fromValues(0, 200, 0);
-        const down = vec3.fromValues(0, -10, 0);
+        const up = vec3.fromValues(0, 100, 0);
+        const down = vec3.fromValues(0, -1, 0);
 
         // 1: add movement acceleration
         let acc = vec3.create();
 
+        let pos = c.fizik.getPosition();
 
         if (this.keys['KeyW']) {
             vec3.add(acc, acc, forward);
@@ -100,15 +101,31 @@ export default class PerspectiveCamera extends Camera {
             vec3.sub(acc, acc, forward);
         }
         if (this.keys['KeyD']) {
-            vec3.add(acc ,acc, right);
+            vec3.add(acc, acc, right);
         }
         if (this.keys['KeyA']) {
             vec3.sub(acc, acc, right);
         }
-        if(this.velocity[1] < 1 && !this.keys['Space']){
+        if (pos.y < 1 && !this.keys['Space']) {
             this.jump = true;
+
         }
 
+
+        if (this.keys['Space'] && this.jump) {
+            this.velocity[1] = 10;
+            this.jumpTime = 0.5
+            this.jump = false;
+        }
+
+        if (this.jumpTime > 0) {
+            console.log(this.jumpTime)
+            this.jumpTime -= dt;
+        } else {
+            if (this.jumpTime < 0) {
+                this.velocity[1] = -10
+            }
+        }
 
         // 2: update velocity
         vec3.add(this.velocity, this.velocity, acc);
@@ -118,8 +135,10 @@ export default class PerspectiveCamera extends Camera {
             !this.keys['KeyS'] &&
             !this.keys['KeyD'] &&
             !this.keys['KeyA']) {
-            vec3.scale(this.velocity, this.velocity, 0);
-            let pos = c.fizik.getPosition();
+            this.velocity[0] = 0;
+            this.velocity[2] = 0;
+            // vec3.scale(this.velocity, this.velocity, 0);
+            // vec3.add(this.velocity, this.velocity, down);
             //c.fizik.resetPosition(pos.x, pos.y, pos.z);
         }
 
@@ -128,13 +147,6 @@ export default class PerspectiveCamera extends Camera {
         if (len > this.maxSpeed) {
             vec3.scale(this.velocity, this.velocity, this.maxSpeed / len);
         }
-        
-        if (this.keys['Space'] && this.jump) {
-            vec3.add(this.velocity, this.velocity, up);
-            this.jump = false;
-        }
-        vec3.add(this.velocity, this.velocity, down);
-
 
 
     }
@@ -192,7 +204,7 @@ export default class PerspectiveCamera extends Camera {
         this.keys[e.code] = false;
     }
 
-    isAttacking(){
+    isAttacking() {
         return this.attack;
     }
 

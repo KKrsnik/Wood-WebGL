@@ -48,18 +48,6 @@ export default class Node {
 
         console.log(this.body.rot);
 
-        // this.negScale = new Float32Array(3)
-        // for (let i = 0; i < 3; i++) {
-        //     if (options.name === "Plane" && i === 1) {
-        //         this.scale[i] = 0.1
-        //     }
-        //     this.negScale[i] = -this.scale[i]
-        // }
-        // this.aabb = {
-        //     min: this.negScale,
-        //     max: this.scale,
-        // };
-
         this.fizik;
 
         this.rotationDeg = [0, 0, 0];
@@ -70,21 +58,19 @@ export default class Node {
             if (options.name === "Camera") {
                 this.body.move = true;
                 this.body.type = 'sphere';
-                //this.body.pos[1] = 4;
-                //this.translation[1] = 4;
+                // this.body.pos[1] = 4;
+                // this.translation[1] = 4;
                 this.body.size = [1.5, 1.5, 1.5];
                 this.body.density = 0.1;
                 //this.body.collidesWith = 0xfffffff0;
                 this.updateTransform();
-            } else if (options.name === "Cylinder"){
-                this.body.type = 'cylinder';
-            } else if (options.name === "Enemy"){
+            } else if (options.name === "Enemy") {
                 this.body.type = 'sphere';
                 this.body.move = true;
                 this.body.size = [1, 1, 1];
                 this.body.density = 5;
                 this.updateTransform();
-            }else {
+            } else {
                 this.updateMatrix();
             }
         }

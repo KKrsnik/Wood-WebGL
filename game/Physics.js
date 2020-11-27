@@ -9,13 +9,13 @@ export default class Physics {
     constructor(scene) {
         this.scene = scene;
         this.world = new OIMO.World({
-            timestep: 1/60,
+            timestep: 1 / 60,
             iterations: 8,
             broadphase: 2, // 1 brute force, 2 sweep and prune, 3 volume tree
             worldscale: 1, // scale full world
             random: true,  // randomize sample
             info: false,   // calculate statistic or not
-            gravity: [0, -9.8, 0]
+            gravity: [0, 0, 0]
         });
 
         this.enemyCount = 0;
@@ -25,26 +25,23 @@ export default class Physics {
 
         this.scene.traverse(node => {
             console.log(node);
-            if(node.camera){
-              node.fizik = this.world.add(node.body);
-              console.log(node);
+            if (node.camera) {
+                node.fizik = this.world.add(node.body);
+                console.log(node);
             }
-            if(node.options.name === "Cube"){
-              node.fizik = this.world.add(node.body);
+            if (node.options.name.split('.')[0] === "Floor" || node.options.name.split('.')[0] === "Bridge") {
+                node.fizik = this.world.add(node.body);
             }
-            if(node.options.name === "Cube.001"){
-              node.fizik = this.world.add(node.body);
+            if (node.options.name === "Water") {
+                node.fizik = this.world.add(node.body);
             }
-            if(node.options.name === "Plane"){
-              node.fizik = this.world.add(node.body);
+            if (node.options.name === "Enemy") {
+                node.fizik = this.world.add(node.body);
+                node.enemy = new Enemy(node);
+                this.enemyCount++;
             }
-            if(node.options.name === "Enemy"){
-              node.fizik = this.world.add(node.body);
-              node.enemy = new Enemy(node);
-              this.enemyCount++;
-            }
-            if(node.options.name === "Weapon"){
-              node.weapon = new Weapon(node);
+            if (node.options.name === "Weapon") {
+                node.weapon = new Weapon(node);
             }
         });
     }
@@ -53,7 +50,7 @@ export default class Physics {
         this.world.step();
         this.scene.traverse(node => {
             if (node.camera && node.options.name === "Camera") {
-                //node.fizik.applyImpulse({x: 0, y: 0, z: 0}, node.camera.getVelocity());
+                // node.fizik.applyImpulse({x: 0, y: 0, z: 0}, node.camera.getVelocity());
                 let v = node.camera.getVelocity();
                 node.fizik.linearVelocity.set(v.x, v.y, v.z);
 
@@ -64,20 +61,20 @@ export default class Physics {
                 node.translation[1] = pos.y;
                 node.translation[2] = pos.z;
                 node.updateTransform();
-                if(pos.y < -20){
-                    node.fizik.resetPosition(0,0,0);
+                if (pos.y < -3) {
+                    node.fizik.resetPosition(0, 0, 0);
                 }
 
                 this.scene.traverse(w => {
-                    if(w.weapon){
+                    if (w.weapon) {
                         w.weapon.update(dt, node, w.matrix);
                         w.updateTransform();
                     }
                 });
 
-                if(node.camera.isAttacking()){
+                if (node.camera.isAttacking()) {
                     this.scene.traverse(enemy => {
-                        if(enemy.enemy){
+                        if (enemy.enemy) {
                             let a = node.fizik.getPosition();
                             let b = enemy.fizik.getPosition();
                             let x = Math.abs(a.x - b.x);
@@ -85,21 +82,21 @@ export default class Physics {
                             let z = Math.abs(a.z - b.z);
 
                             let dist = x + y + z;
-                            if(dist < 5.0){
-                              enemy.fizik.resetPosition(-100, -200, -100);
-                              var audio = new Audio('common/sounds/death2.mp3');
-                              audio.play();
-                              this.enemyCount--;
-                              this.slain++;
+                            if (dist < 5.0) {
+                                enemy.fizik.resetPosition(-100, -200, -100);
+                                var audio = new Audio('common/sounds/death2.mp3');
+                                audio.play();
+                                this.enemyCount--;
+                                this.slain++;
                             }
                         }
 
                     });
                 }
             }
-            if (node.enemy){
+            if (node.enemy) {
                 node.enemy.update(dt);
-                node.fizik.applyImpulse({x : 0, y : 0, z : 0}, node.enemy.getVelocity());
+                node.fizik.applyImpulse({x: 0, y: 0, z: 0}, node.enemy.getVelocity());
                 let pos = node.fizik.getPosition();
                 node.translation[0] = pos.x;
                 node.translation[1] = pos.y;
@@ -112,7 +109,7 @@ export default class Physics {
 
                 let dist = x + z;
                 //console.log(dist);
-                if(dist < 5){
+                if (dist < 5) {
                     //console.log("hehe");
                     node.fizik.resetPosition(0, -200, 0);
                     this.enemyCount--;
@@ -120,21 +117,21 @@ export default class Physics {
                 }
             }
         });
-        if(this.enemyCount === 0 && this.slain > 0){
-            document.getElementById("win").style.visibility = "visible";
-            document.exitPointerLock();
-            this.win = true;
-        }
-        if(this.enemyCount === 0 && this.slain === 0 && !this.win){
-            //console.log("enemy 0 slain 0");
-            document.getElementById("lose").style.visibility = "visible";
-            document.exitPointerLock();
-        }
-        if(this.timeLeft < 0 && !this.win ){
-            //console.log("time");
-            document.getElementById("lose").style.visibility = "visible";
-            document.exitPointerLock();
-        }
+        // if(this.enemyCount === 0 && this.slain > 0){
+        //     document.getElementById("win").style.visibility = "visible";
+        //     document.exitPointerLock();
+        //     this.win = true;
+        // }
+        // if(this.enemyCount === 0 && this.slain === 0 && !this.win){
+        //     //console.log("enemy 0 slain 0");
+        //     document.getElementById("lose").style.visibility = "visible";
+        //     document.exitPointerLock();
+        // }
+        // if(this.timeLeft < 0 && !this.win ){
+        //     //console.log("time");
+        //     document.getElementById("lose").style.visibility = "visible";
+        //     document.exitPointerLock();
+        // }
 
         document.getElementById("time").innerHTML = Math.ceil(this.timeLeft);
         document.getElementById("left").innerHTML = this.enemyCount;
@@ -213,12 +210,12 @@ export default class Physics {
     //     a.updateTransform();
     // }
 
-    distance(a, b){
+    distance(a, b) {
         let x = Math.abs(a[0] - b[0]);
         let y = Math.abs(a[1] - b[1]);
         let z = Math.abs(a[2] - b[2]);
 
-        return x+y+z;
+        return x + y + z;
     }
 
 }
