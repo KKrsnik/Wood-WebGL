@@ -20,6 +20,7 @@ export default class Physics {
 
         this.enemyCount = 0;
         this.win = false;
+        this.lose = false;
         this.timeLeft = 45.0;
         this.slain = 0;
 
@@ -120,25 +121,36 @@ export default class Physics {
                 }
             }
         });
-        if(this.enemyCount === 0 && this.slain > 0){
+        if(this.enemyCount === 0 && this.slain > 0 && !this.win){
             document.getElementById("win").style.visibility = "visible";
             document.exitPointerLock();
+            var m = new Audio('common/sounds/passed.mp3');
+            m.volume = 0.2;
+            m.play();
             this.win = true;
         }
-        if(this.enemyCount === 0 && this.slain === 0 && !this.win){
+        if(this.enemyCount === 0 && this.slain === 0 && !this.win && !this.lose){
             //console.log("enemy 0 slain 0");
             document.getElementById("lose").style.visibility = "visible";
             document.exitPointerLock();
+            var m = new Audio('common/sounds/failed.mp3');
+            m.volume = 0.2;
+            m.play();
+            this.lose = true;
         }
-        if(this.timeLeft < 0 && !this.win ){
+        if(this.timeLeft < 0 && !this.win && !this.lose){
             //console.log("time");
             document.getElementById("lose").style.visibility = "visible";
             document.exitPointerLock();
+            var m = new Audio('common/sounds/failed.mp3');
+            m.volume = 0.2;
+            m.play();
+            this.lose = true;
         }
 
         document.getElementById("time").innerHTML = Math.ceil(this.timeLeft);
         document.getElementById("left").innerHTML = this.enemyCount;
-
+        
         this.timeLeft -= dt;
     }
 
